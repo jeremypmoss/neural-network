@@ -21,7 +21,7 @@ start_time = time.time()
 #%% Load data
 dataset, datasetname, magnames, mags = qf.loaddata('test',
                                                    dropna = False,  # to drop NaNs
-                                                   colours = True, # to compute colours of mags
+                                                   colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
 
 #%% Model
@@ -48,8 +48,7 @@ for i in range(num_trials):
     history = model.fit(X_train, y_train, epochs = epochs,
                         validation_split = 1 - train_frac,
                         verbose = 0, callbacks = [early_stop,
-                                                  tfdocs.modeling.EpochDots()
-                                                 ])
+                                                  tfdocs.modeling.EpochDots()])
     y_pred = model.predict(X_test)
     
     # Make a new dataset containing the redshifts
