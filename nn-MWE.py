@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 start_time = time.time()
 
 def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'):
+    # Make a toy dataset
     if seed:
         seed = seed
     else:
@@ -49,6 +50,7 @@ def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'
 
 def loaddata(name, colours = False, impute_method = None, cols = None,
              dropna = True, number_of_rows = 'all'):
+    # Load a dataset
     path = ''
     df = pd.read_csv(path + 'test_dataset.csv',
                      sep = ',', index_col = False, header = 0)
@@ -99,6 +101,7 @@ std_list = []
 train_frac = 0.8
 
 for i in range(num_trials):
+    # Create a new model and predictions on each iteration
     print('*'*58);print('Run {0} of {1}'.format(i+1, num_trials)); print('*'*58)
     X_train, X_test, y_train, y_test = train_test_split(mags, # features
                                                 dataset['redshift'], # target
@@ -119,12 +122,10 @@ for i in range(num_trials):
     X_test['delta_z'] = X_test['z_spec'] - X_test['z_phot']
     
     stats = X_test['delta_z'].describe().transpose()
-    mean, std = stats['mean'], stats['std']
+    mean, std = stats['mean'], stats['std'] # add means and std devs to lists
     mean_list.append(mean)
     std_list.append(std)
 
-# for i in range(num_trials):
-    
 print("Model completed in", time.time() - start_time, "seconds")
   
 #%% Display means and standard deviations
