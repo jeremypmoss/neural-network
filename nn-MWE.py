@@ -81,7 +81,7 @@ def build_nn_model(n, hyperparameters, loss, metrics, opt):
     return model
 
 #%% Load data
-make_test_df(10, 5, 0)
+make_test_df(100, 20, 0)
 dataset, datasetname, magnames, mags = loaddata('test',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
@@ -95,17 +95,23 @@ metrics = ['mae']
 epochs = 100
 opt = 'Nadam'
 
-num_trials = 3
+num_trials = 4
 mean_list = []
 std_list = []
 train_frac = 0.8
 
+X_train, X_test, y_train, y_test = train_test_split(mags, # features
+                                                dataset['redshift'], # target
+                                                train_size = train_frac)
+
+z_df = pd.DataFrame([])
+z_df['z_spec'] = y_test
+
+
 for i in range(num_trials):
     # Create a new model and predictions on each iteration
     print('*'*58);print('Run {0} of {1}'.format(i+1, num_trials)); print('*'*58)
-    X_train, X_test, y_train, y_test = train_test_split(mags, # features
-                                                dataset['redshift'], # target
-                                                train_size = train_frac)
+    
     model = build_nn_model(len(mags.columns), hyperparams, loss, metrics, opt)
     model.summary()
     early_stop = keras.callbacks.EarlyStopping(patience=100)
@@ -117,11 +123,11 @@ for i in range(num_trials):
     y_pred = model.predict(X_test)
     
     # Record the redshift predictions in the test set
-    X_test['z_spec'] = y_test
-    X_test['z_phot'] = y_pred
-    X_test['delta_z'] = X_test['z_spec'] - X_test['z_phot']
+    z_df ['z_spec'] = y_test
+    z_df ['z_phot'+str(i)] = y_pred
+    z_df ['delta_z'] = z_df ['z_spec'] - z_df ['z_phot'+str(i)]
     
-    stats = X_test['delta_z'].describe().transpose()
+    stats = z_df['delta_z'].describe().transpose()
     mean, std = stats['mean'], stats['std'] # add means and std devs to lists
     mean_list.append(mean)
     std_list.append(std)
