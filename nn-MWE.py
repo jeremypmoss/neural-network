@@ -85,7 +85,7 @@ make_test_df(100, 20, 0)
 dataset, datasetname, magnames, mags = loaddata('test',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
-                                                   impute_method = 'max') # to impute max vals for missing data
+                                                   impute_method = None) # to impute max vals for missing data
 
 #%% Main body
 
@@ -107,7 +107,6 @@ X_train, X_test, y_train, y_test = train_test_split(mags, # features
 z_df = pd.DataFrame([])
 z_df['z_spec'] = y_test
 
-
 for i in range(num_trials):
     # Create a new model and predictions on each iteration
     print('*'*58);print('Run {0} of {1}'.format(i+1, num_trials)); print('*'*58)
@@ -123,7 +122,6 @@ for i in range(num_trials):
     y_pred = model.predict(X_test)
     
     # Record the redshift predictions in the test set
-    z_df ['z_spec'] = y_test
     z_df ['z_phot'+str(i)] = y_pred
     z_df ['delta_z'] = z_df ['z_spec'] - z_df ['z_phot'+str(i)]
     
