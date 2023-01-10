@@ -123,6 +123,7 @@ opt = 'Nadam'
 
 train_frac = 0.8
 
+#%% Train and fit a model
 X_train, X_test, y_train, y_test = train_test_split(mags, # features
                                                 dataset['redshift'], # target
                                                 train_size = train_frac)
@@ -137,14 +138,25 @@ history = model.fit(X_train, y_train, epochs = epochs,
                                               tfdocs.modeling.EpochDots()])
 y_pred = model.predict(X_test)
 
-optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
-epochs = [10, 50]
+#%% Grid search through the possible hyperparameters
+parameters = {'loss'         : ['squared_error', 'absolute_error', 'huber', 'quantile'],
+              'optimizer'    : ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam'],
+              'epochs'       : [10, 50, 100]
+              # what else can I try in here?
+}
 
-param_grid = dict(epochs=epochs, optimizer=optimizer)
-grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring='accuracy', n_jobs=-1, refit='boolean')
+grid = GridSearchCV(estimator = model,
+                    param_grid = parameters,
+                    scoring = 'accuracy',
+                    n_jobs = -1, # use all processors
+                    refit = 'boolean',
+                    verbose = 4)
 grid_result = grid.fit(X_train, y_train)
 
 mse_krr = mean_squared_error(y_test, y_pred)
 print(mse_krr)
+print(grid.best_params_)
 
 print("Model completed in", time.time() - start_time, "seconds")
+
+plt.scatter(y_test, y_pred)
