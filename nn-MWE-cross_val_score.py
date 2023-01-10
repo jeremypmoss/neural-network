@@ -8,12 +8,17 @@ Created on Mon Jan  9 08:30:36 2023
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.model_selection import GridSearchCV
+from scikeras.wrappers import KerasRegressor
+from sklearn.metrics import mean_squared_error
 from tensorflow import keras
+
 import tensorflow_docs.modeling
 import tensorflow_docs as tfdocs
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+from sklearn.impute import SimpleImputer
+
 
 start_time = time.time()
 
@@ -64,6 +69,27 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
     df = df.where(df != -999, np.nan)
     mgf = mgf.where(mgf != -999, np.nan)
     
+    # Inspect structure of missing data; requires dropna = False in qf.loaddata()
+    if dropna:
+        df = df.dropna(axis = 0, how = 'any')
+        mgf = mgf.dropna(axis = 0, how = 'any')
+        print('NaNs have been dropped from the original data.')
+    else: pass
+
+    if impute_method == 'max':
+        df = df.fillna(df.max()) # using max() assumes missing data are due to detection limit
+        mgf = mgf.fillna(mgf.max())
+        print('Missing values have been imputed with the maximum for each column.')
+    elif impute_method == 'mean':
+        impute_mean = SimpleImputer(missing_values = np.nan,
+                                    strategy = 'mean')
+        # impute_mean.fit(df)
+        impute_mean.fit(mgf)
+        # impute_mean.transform(df)
+        mgf = impute_mean.transform(mgf) # converts to np.array
+        mgf = pd.DataFrame(mgf, columns = magnames) # back to DataFrame
+        print('Missing values have been imputed with the mean for each column.')
+    
     return df, datasetname, magnames, mgf
 
 def build_nn_model(n, hyperparameters, loss, metrics, opt):
@@ -72,13 +98,12 @@ def build_nn_model(n, hyperparameters, loss, metrics, opt):
                            input_shape=[n]),  # number of features
     keras.layers.Dense(hyperparameters[2], activation=hyperparameters[3]),
     keras.layers.Dense(hyperparameters[4], activation=hyperparameters[5]),
-
-    keras.layers.Dense(1) # 1 output (redshift)
-    ])
+    keras.layers.Dense(1)]) # 1 output (redshift)
 
     model.compile(loss=loss,
                   optimizer = opt,
-            metrics = metrics)
+                  metrics = metrics)
+    print(model.summary())
     return model
 
 #%% Load data
@@ -86,7 +111,7 @@ make_test_df(100, 20, 0)
 dataset, datasetname, magnames, mags = loaddata('test',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
-                                                   impute_method = None) # to impute max vals for missing data
+                                                   impute_method = 'max') # to impute max vals for missing data
 
 #%% Main body
 
@@ -102,8 +127,8 @@ X_train, X_test, y_train, y_test = train_test_split(mags, # features
                                                 dataset['redshift'], # target
                                                 train_size = train_frac)
 
-model = build_nn_model(len(mags.columns), hyperparams, loss, metrics, opt)
-model.summary()
+model = KerasRegressor(build_nn_model(len(mags.columns), hyperparams, loss, metrics, opt))
+
 early_stop = keras.callbacks.EarlyStopping(patience=100)
 
 history = model.fit(X_train, y_train, epochs = epochs,
@@ -113,10 +138,13 @@ history = model.fit(X_train, y_train, epochs = epochs,
 y_pred = model.predict(X_test)
 
 optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
-epochs = [10, 50, 100]
+epochs = [10, 50]
 
 param_grid = dict(epochs=epochs, optimizer=optimizer)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, scoring='accuracy', n_jobs=-1, refit='boolean')
 grid_result = grid.fit(X_train, y_train)
+
+mse_krr = mean_squared_error(y_test, y_pred)
+print(mse_krr)
 
 print("Model completed in", time.time() - start_time, "seconds")
