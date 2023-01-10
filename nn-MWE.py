@@ -12,7 +12,6 @@ import tensorflow_docs.modeling
 import tensorflow_docs as tfdocs
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
 
 start_time = time.time()
 
