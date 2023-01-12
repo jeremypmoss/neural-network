@@ -4,7 +4,7 @@ Created on Mon Jan  9 08:30:36 2023
 
 @author: JeremyMoss
 """
-
+import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.model_selection import GridSearchCV

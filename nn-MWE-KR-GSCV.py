@@ -4,7 +4,7 @@ Created on Mon Jan  9 08:30:36 2023
 
 @author: JeremyMoss
 """
-
+import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
 import numpy as np
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.model_selection import GridSearchCV
@@ -150,7 +150,7 @@ parameters = {'loss'         : ['squared_error', 'absolute_error', 'huber', 'qua
 grid = GridSearchCV(estimator = model,
                     param_grid = parameters,
                     scoring = 'accuracy',
-                    n_jobs = -1, # use all processors
+                    n_jobs = None, # don't use -1
                     refit = 'boolean',
                     verbose = 4)
 grid_result = grid.fit(X_train, y_train)

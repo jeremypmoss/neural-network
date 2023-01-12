@@ -6,6 +6,8 @@ Created on Tue Dec 20 14:38:07 2022
 """
 
 #%% Imports
+
+import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -14,12 +16,12 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import mean_squared_error
-from quasar_functions import *
+import quasar_functions as qf
 
 start_time = time.time()
 
 #%% Load dataset
-dataset, datasetname, magnames, mags = loaddata('galex_x_sdss12',
+dataset, datasetname, magnames, mags = qf.loaddata('galex_x_sdss12',
                                                    dropna = False,  # to drop NaNs
                                                    colours = True, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
@@ -139,11 +141,11 @@ fig.tight_layout()
 # plot_mse() #https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/
 # plot_mae()
 # qf.plot_deltaz(x, y, datasetname)
-plot_z(y_test, y_pred, datasetname, ax = ax[0])
-plot_delta_z_hist(delta_z, datasetname, model, ax = ax[1])
+qf.plot_z(y_test, y_pred, datasetname, ax = ax[0])
+qf.plot_delta_z_hist(delta_z, datasetname, model, ax = ax[1])
 # qf.plot_z_boxplot(dataset, x, y, datasetname, True, ax = None)
 # qf.plot_z_boxplot(dataset, x, y, datasetname, False, ax = None)
 
-plot_z_sets(y_train, y_test, datasetname)
+qf.plot_z_sets(y_train, y_test, datasetname)
 
 print("Script completed in", time.time() - start_time, "seconds")
