@@ -4,6 +4,7 @@ Created on Mon Jan  9 08:30:36 2023
 
 @author: JeremyMoss
 """
+
 import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -44,7 +45,7 @@ def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'
     df.insert(2, 'DEJ2000', df.pop('DEJ2000'))
 
     # Save as file
-    path = ''
+    path = 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code'
     df.to_csv(path + file_name, index = False)
 
 def loaddata(name, colours = False, impute_method = None, cols = None,

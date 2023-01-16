@@ -23,11 +23,11 @@ start_time = time.time()
 
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('galex_x_sdss12',
+dataset, datasetname, magnames, mags = qf.loaddata('galexqso',
                                                    dropna = False,  # to drop NaNs
-                                                   colours = False, # to compute colours of mags
+                                                   colours = True, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
-
+dataset = dataset.drop(['J_mag', 'H_mag', 'K_mag'], axis = 1)
 #%% Model
 hyperparams = [100, 'relu', 100, 'relu', 100, 'relu']
 loss = 'mae'
@@ -58,7 +58,7 @@ print("Model completed in", (time.time() - start_time)/60, "minutes")
 #%% Grid search through the possible hyperparameters
 # parameters = {'loss'         : ['squared_error', 'absolute_error', 'huber', 'quantile'],
 #               'optimizer'    : ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam'],
-#               'epochs'       : [10, 50, 100],
+#               'epochs'       : [10],
 #               'batch_size'   : [5, 10, 50]}
 #               # what else can I try in here?
 
@@ -67,7 +67,7 @@ print("Model completed in", (time.time() - start_time)/60, "minutes")
 #                     scoring = 'accuracy',
 #                     n_jobs = None, # not -1
 #                     refit = 'boolean',
-#                     verbose = 4)
+#                     verbose = 0)
 # grid_result = grid.fit(X_train, y_train)
 
 # mse_krr = mean_squared_error(y_test, y_pred)
