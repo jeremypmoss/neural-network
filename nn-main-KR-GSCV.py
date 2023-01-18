@@ -25,9 +25,9 @@ start_time = time.time()
 
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('test',
+dataset, datasetname, magnames, mags = qf.loaddata('sdss12_x_ukidss',
                                                    dropna = False,  # to drop NaNs
-                                                   colours = True, # to compute colours of mags
+                                                   colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
 #%% Model
 wandb.init(project = 'nn-KR-GSCV_{}'.format(datasetname))
@@ -61,30 +61,14 @@ X_test['z_phot'] = y_pred
 X_test['delta_z'] = X_test['z_spec'] - X_test['z_phot']
 print("Model completed in", (time.time() - start_time), "seconds")
 
-#%% Grid search through the possible hyperparameters
-# parameters = {'loss'         : ['squared_error', 'absolute_error', 'huber', 'quantile'],
-#               'optimizer'    : ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam'],
-#               'epochs'       : [10],
-#               'batch_size'   : [5, 10, 50]}
-#               # what else can I try in here?
-
-# grid = GridSearchCV(estimator = model,
-#                     param_grid = parameters,
-#                     scoring = 'accuracy',
-#                     n_jobs = None, # not -1
-#                     refit = 'boolean',
-#                     verbose = 0)
-# grid_result = grid.fit(X_train, y_train)
-
-# mse_krr = mean_squared_error(y_test, y_pred)
-# print(mse_krr)
-# print(grid.best_params_)
-# print(grid.best_estimator_)
+# qf.optimise_model(model, X_train, y_train, y_test, y_pred) # grid search
 
 print("Optimisation completed in", (time.time() - start_time), "seconds")
 #%% Plot results
 
-fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize = (12, 9))
+fig, ax = plt.subplots(nrows = 1, ncols = 2,
+                       # figsize = (12, 9)
+                       )
 fig.tight_layout()
 
 # plot_mse() #https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/
