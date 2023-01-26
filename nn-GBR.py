@@ -25,29 +25,29 @@ dataset, datasetname, magnames, mags = qf.loaddata('galex_x_sdss12',
                                                    dropna = False,  # to drop NaNs
                                                    colours = True, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
-
-dataset = dataset[dataset['redshift'] < 3]
 X = mags
 y = dataset['redshift']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20) # can I replace this with the sets from nn?
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
 #%% GradientBoostingRegressor
 GBR = GradientBoostingRegressor()
-parameters = {'learning_rate': [0.01, 0.02, 0.03, 0.04],
-               'subsample'    : [0.9, 0.5, 0.2, 0.1],
-               'n_estimators' : [100, 500, 1000, 1500, 2000],
-               'max_depth'    : [4, 6, 8, 10],
-                'loss'         : ['squared_error', 'absolute_error', 'huber', 'quantile'],
-                'criterion'    : ['friedman_mse', 'squared_error']
+parameters = {
+              'learning_rate': [0.01, 0.02, 0.03, 0.04],
+              'subsample'    : [0.9, 0.5, 0.2, 0.1],
+              'n_estimators' : [100, 500, 1000, 1500, 2000],
+              'max_depth'    : [4, 6, 8, 10],
+              'loss'         : ['squared_error', 'absolute_error', 'huber', 'quantile'],
+              'criterion'    : ['friedman_mse', 'squared_error']
               }
 
-wandb.init(project='GBR_{0}'.format(datasetname),
-           config = {'epochs': 4, 'batch_size': 32, 'lr': 'learning_rate'})
-wandb.log({'acc': 0.9, 'loss': 0.1})
+# wandb.init(project='GBR_{0}'.format(datasetname),
+#            config = {'epochs': 4, 'batch_size': 32, 'lr': 'learning_rate'})
+# wandb.log({'acc': 0.9, 'loss': 0.1})
 
 grid_GBR = GridSearchCV(estimator=GBR, param_grid = parameters, cv = 2, n_jobs=-1)
 grid_GBR.fit(X_train, y_train)
 
 # Results from Grid Search
+# https://blog.paperspace.com/implementing-gradient-boosting-regression-python/
 print(" Results from Grid Search")
 print("\n The best estimator across ALL searched params:\n",
       grid_GBR.best_estimator_)
@@ -138,13 +138,8 @@ for i in r.importances_mean.argsort()[::-1]:
 fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize = (12, 9))
 fig.tight_layout()
 
-# plot_mse() #https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/
-# plot_mae()
-# qf.plot_deltaz(x, y, datasetname)
 qf.plot_z(y_test, y_pred, datasetname, ax = ax[0])
 qf.plot_delta_z_hist(delta_z, datasetname, model, ax = ax[1])
-# qf.plot_z_boxplot(dataset, x, y, datasetname, True, ax = None)
-# qf.plot_z_boxplot(dataset, x, y, datasetname, False, ax = None)
 
 qf.plot_z_sets(y_train, y_test, datasetname)
 

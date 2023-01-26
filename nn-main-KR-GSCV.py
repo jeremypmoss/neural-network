@@ -25,7 +25,7 @@ start_time = time.time()
 
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('sdss12_x_ukidss',
+dataset, datasetname, magnames, mags = qf.loaddata('deep2',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
@@ -56,12 +56,12 @@ history = model.fit(X_train, y_train, epochs = epochs,
                                  WandbModelCheckpoint("models")])
 y_pred = model.predict(X_test)
 
-X_test['z_spec'] = y_test 
+X_test['z_spec'] = y_test
 X_test['z_phot'] = y_pred
 X_test['delta_z'] = X_test['z_spec'] - X_test['z_phot']
 print("Model completed in", (time.time() - start_time), "seconds")
 
-# qf.optimise_model(model, X_train, y_train, y_test, y_pred) # grid search
+# qf.grid_search_model(model, X_train, y_train, y_test, y_pred) # grid search
 
 print("Optimisation completed in", (time.time() - start_time), "seconds")
 #%% Plot results

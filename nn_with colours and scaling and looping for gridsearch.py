@@ -45,7 +45,7 @@ def plot_mse():
     plt.title('Mean Standard Error evolution for %s'%datasetname)
     plt.ylabel(r'$\Delta z$')
     plt.show()
-    
+
 def build_model(n, hyperparameters, loss, metrics, opt, **kwargs):
     ''' Define the prediction model. The NN takes magnitudes as input features
     and outputs the redshift. n should be len(train_set.keys())'''
@@ -56,12 +56,12 @@ def build_model(n, hyperparameters, loss, metrics, opt, **kwargs):
     keras.layers.Dense(hyperparameters[4], activation=hyperparameters[5]),
     keras.layers.Dense(1) # 1 output (redshift)
     ])
-    
+
     # if optim == "Adam":
     #     model.compile(loss=loss,
     #             optimizer = keras.optimizers.Adam(0.001),
     #             metrics = metrics)
-    
+
     # if optim == "RMSprop":
     model.compile(loss=loss,
                   optimizer = opt,
@@ -115,12 +115,12 @@ for i in range(num_trials):
     y = train_labels = train_dataset.loc[:, 'redshift'].values
     # print('Training set (first 5 rows): \n', train_dataset.head())
     # print('Validation set (first 5 rows): \n', valid_dataset.head())
-    
+
     model = build_model(len(features.columns), hyperparameters, loss, metrics, opt)
-        
+
     model.summary()
     early_stop = keras.callbacks.EarlyStopping(patience=100)
-    
+
     # train_dataset = train_dataset[magnames]
     train_dataset = train_dataset[features.columns]
     valid_dataset_for_predictions = valid_dataset[features.columns]
@@ -132,7 +132,7 @@ for i in range(num_trials):
                         validation_split = 1 - train_frac,
                         verbose = 0, callbacks = [early_stop,
                                                  tfdocs.modeling.EpochDots()])
-    
+
     # Model testing
     valid_predictions = model.predict(valid_dataset_for_predictions)
     # valid_predictions = model.predict(valid_dataset)
@@ -140,10 +140,10 @@ for i in range(num_trials):
     zpred_list = pd.DataFrame(valid_predictions, columns = ['Predicted z'+str(i+1)])
     # zpred_list['next zpred'] = pd.DataFrame(valid_predictions, columns = ['z'+str(i)])
     # zpred_list['Predicted z'+str(i)] = valid_predictions
-    
+
     print("\nPredicted\n")
     print(valid_dataset)
-    
+
     # Visualise the model's training progress using the stats in the history object
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
@@ -153,24 +153,18 @@ for i in range(num_trials):
     print('Predicted z stats: \n', valid_dataset['Predicted z'].describe())
     valid_dataset['Delta z'] = valid_dataset['Predicted z'] - valid_dataset['redshift']
     print('Delta z stats: \n', valid_dataset['Delta z'].describe())
-    
+
     stats = valid_dataset['Delta z'].describe().transpose()
     mean, std = stats['mean'], stats['std']
     mean_list.append(mean)
     std_list.append(std)
-    
+
     print('Mean = {0}, std = {1}'.format(mean, std))
 
 #%% Display means and standard deviations
-# border = '-'*25
-# separator = '\t\t|\t'
+
 qf.print_two_lists(mean_list, std_list)
-# print('Means' + separator + 'Std devs')
-# print(border)
-# for i in range(len(results_list)):
-#     print('{0: 7f}\t|\t{1:7f}'.format(results_list[i][0], results_list[i][1]))
-# print(border)
-# print('Average mean = {0}\nAverage std dev = {1}'.format(np.mean(mean_list), np.mean(std_list)))
+
 #%% Grid search - Tune Dropout Regularization
 # define the grid search parameters
 # weight_constraint = [1.0, 2.0, 3.0, 4.0, 5.0]
@@ -186,7 +180,7 @@ qf.print_two_lists(mean_list, std_list)
 # params = grid_result.cv_results_['params']
 # for mean, stdev, param in zip(means, stds, params):
 #     print("%f (%f) with: %r" % (mean, stdev, param))
-    
+
 #%% Plot results
 import quasar_functions as qf # reload so this cell can be run separately
 
