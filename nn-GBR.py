@@ -21,7 +21,7 @@ import quasar_functions as qf
 start_time = time.time()
 
 #%% Load dataset
-dataset, datasetname, magnames, mags = qf.loaddata('galex_x_sdss12',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
                                                    colours = True, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data

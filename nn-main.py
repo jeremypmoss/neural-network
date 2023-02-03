@@ -35,7 +35,6 @@ opt = 'Nadam'
 num_trials = 3
 mean_list = []
 std_list = []
-# frames = []
 train_frac = 0.8
 X_train, X_test, y_train, y_test = train_test_split(mags, # features
                                                 dataset['redshift'], # target
