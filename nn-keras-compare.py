@@ -26,7 +26,7 @@ import time
 start_time = time.time()
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('deep2',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data

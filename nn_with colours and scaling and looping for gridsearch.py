@@ -73,7 +73,7 @@ def build_model(n, hyperparameters, loss, metrics, opt, **kwargs):
 import quasar_functions as qf
 
 # qf.make_test_df(n_galaxies = 1000, n_mags = 15, seed = 0)
-dataset, datasetname, magnames, mags = qf.loaddata('sdss12_x_ukidss',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data

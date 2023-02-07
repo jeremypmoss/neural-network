@@ -25,10 +25,10 @@ start_time = time.time()
 
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('deep2',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
-                                                   impute_method = 'max') # to impute max vals for missing data
+                                                   impute_method = 'max') # to impute max vals for
 #%% Model
 wandb.init(project = 'nn-KR-GSCV_{}'.format(datasetname))
 hyperparams = [100, 'relu', 100, 'relu', 100, 'relu']
@@ -81,3 +81,10 @@ qf.kurt_result(X_test['delta_z'])
 qf.plot_z_sets(y_train, X_test['z_spec'], datasetname)
 
 print("Script completed in", (time.time() - start_time), "seconds")
+
+#%% Load a test set
+sky, skyname, skymagnames, skymags = qf.loaddata('skymapper',
+                                                   dropna = True,  # to drop NaNs
+                                                   colours = False, # to compute colours of mags
+                                                   impute_method = None) # to impute max vals for
+sky_pred = model.predict(sky)

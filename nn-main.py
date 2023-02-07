@@ -20,7 +20,7 @@ start_time = time.time()
 
 #%% Load data
 qf.make_test(1000, 10, 0)
-dataset, datasetname, magnames, mags = qf.loaddata('test',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
