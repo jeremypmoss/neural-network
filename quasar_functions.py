@@ -25,7 +25,10 @@ from sklearn.impute import SimpleImputer
 from astropy.coordinates import SkyCoord
 
 # from imutils import path
+font = {'weight' : 'normal',
+        'size'   : 15}
 
+plt.rc('font', **font)
 ###############################################################################
 def loaddata(name, colours = False, impute_method = None, cols = None,
              dropna = True, number_of_rows = 'all'):
@@ -35,32 +38,49 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
     ----------
     name: The name of the dataset (eg: galex, sdss12, vimos, ugriz, sdss, mgii,
                              largess).
-    
+
     colours: Whether to compute the colours of the magnitudes selected.
             Default: False. If the features selected are not magnitudes
             (e.g. spectral index or turnover frequency, this should be False).
-    
+
     impute_max: Whether to impute missing values with the maximum from the
                 column (boolean; default = False.
-    
+
     cols: The columns to select from the file; if None, read all columns.
     (default = None).
-    
+
     dropna: Whether to drop NaNs (boolean; default = True).
-        
+
     Returns
     -------
     df; pandas.dataframe containing data, columns read from `cols`.
-    
+
     datasetname; a string used for naming plots or files.
-    
+
     magnames; a list of the magnitude names used in the survey.
-    
+
     mf; a dataframe consisting of the data in the mags columns of the dataset
     '''
-    path = 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/data_files'
+    path = r'../../data_files'
+#%% Skymapper
+    if name.lower() == 'skymapper': # 999999
+        redshift = False
+        # fields = [_RAJ2000,_DEJ2000,ObjectId,RAICRS,DEICRS,e_RAICRS,e_DEICRS,SMSS,EpMean,flags,ClassStar,RadrPetro,a,b,PA,uPSF,uPetro,vPSF,vPetro,gPSF,gPetro,rPSF,rPetro,iPSF,iPetro,zPSF,zPetro,(u-v)PSF,(u-g)PSF,(g-r)PSF,(g-i)PSF,(i-z)PSF]
+        magnames = ['u','g','r',
+                    'i','zmag'
+                    ]
+        df = pd.read_csv(path + '/Skymapper/vizier_II_358_smss_20230207_2.csv',
+                         sep = ',', index_col = False,
+                         usecols = ['uPSF','gPSF','rPSF','iPSF','zPSF'])
+        df.rename(columns={'uPSF':'u',
+                           'gPSF':'g',
+                           'rPSF':'r',
+                           'iPSF':'i',
+                           'zPSF':'zmag',}, inplace = True)
+        datasetname = 'Skymapper'
+
 #%% Processed MQ x GLEAM with radio spectral fits
-    if name.lower() == 'mq_processed':
+    if name.lower() == 'mq_processed': # 9276
         redshift = True
         # fields = [_RAJ2000_1,_DEJ2000_1,GLEAM,RAJ2000_1,DEJ2000_1,Fpwide,Fintwide,eabsFpct,efitFpct,Fp076,Fint076,Fp084,Fint084,Fp092,Fint092,Fp099,Fint099,Fp107,Fint107,Fp115,Fint115,Fp122,Fint122,Fp130,Fint130,Fp143,Fint143,Fp151,Fint151,Fp158,Fint158,Fp166,Fint166,Fp174,Fint174,Fp181,Fint181,Fp189,Fint189,Fp197,Fint197,Fp204,Fint204,Fp212,Fint212,Fp220,Fint220,Fp227,Fint227,alpha,Fintfit200,_RAJ2000_2,_DEJ2000_2,recno,RAJ2000_2,DEJ2000_2,Name,Type,Rmag,Bmag,Comment,R,B,z,Qpct,XName,RName,Separation]
         magnames = [
@@ -72,9 +92,9 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          usecols = cols)
         df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'GLEAM x Milliquas spectral fits'
-        
+
 #%% Spectroscopically-confirmed QSOs from milliquas
-    if name.lower() == 'radio_z_mq':
+    if name.lower() == 'radio_z_mq': # 45318
         redshift = True
         # fields = [_RAJ2000_1,_DEJ2000_1,GLEAM,RAJ2000_1,DEJ2000_1,Fpwide,Fintwide,eabsFpct,efitFpct,Fp076,Fint076,Fp084,Fint084,Fp092,Fint092,Fp099,Fint099,Fp107,Fint107,Fp115,Fint115,Fp122,Fint122,Fp130,Fint130,Fp143,Fint143,Fp151,Fint151,Fp158,Fint158,Fp166,Fint166,Fp174,Fint174,Fp181,Fint181,Fp189,Fint189,Fp197,Fint197,Fp204,Fint204,Fp212,Fint212,Fp220,Fint220,Fp227,Fint227,alpha,Fintfit200,_RAJ2000_2,_DEJ2000_2,recno,RAJ2000_2,DEJ2000_2,Name,Type,Rmag,Bmag,Comment,R,B,z,Qpct,XName,RName,Separation]
         magnames = ['Rmag','Bmag']
@@ -89,7 +109,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
 
 #%% GLEAM x Milliquas
 # First 50,000 GALEX QSOs with SDSS and WISE
-    if name.lower() == 'gleam_x_milliquas':
+    if name.lower() == 'gleam_x_milliquas': # 3513
         redshift = True
         # fields = [_RAJ2000_1,_DEJ2000_1,GLEAM,RAJ2000_1,DEJ2000_1,Fpwide,Fintwide,eabsFpct,efitFpct,Fp076,Fint076,Fp084,Fint084,Fp092,Fint092,Fp099,Fint099,Fp107,Fint107,Fp115,Fint115,Fp122,Fint122,Fp130,Fint130,Fp143,Fint143,Fp151,Fint151,Fp158,Fint158,Fp166,Fint166,Fp174,Fint174,Fp181,Fint181,Fp189,Fint189,Fp197,Fint197,Fp204,Fint204,Fp212,Fint212,Fp220,Fint220,Fp227,Fint227,alpha,Fintfit200,_RAJ2000_2,_DEJ2000_2,recno,RAJ2000_2,DEJ2000_2,Name,Type,Rmag,Bmag,Comment,R,B,z,Qpct,XName,RName,Separation]
         magnames = ['Rmag','Bmag','Fp076','Fp084','Fp092',
@@ -111,7 +131,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
 
 #%% GALEX QSO
 # First 50,000 GALEX QSOs with SDSS and WISE
-    if name.lower() == 'galexqso':
+    if name.lower() == 'galexqso': # 33577
         redshift = False
         fields = ['no','NED','redshift','ez','type','class','no_radio','radio_top',
                   'no_UV','uv_bottom','u_mag','g_mag','r_mag','i_mag','z_mag',
@@ -119,7 +139,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'SPIT_8_mag','W3_mag','W4_mag','NUV_mag','FUV_mag']
         magnames = [
                     'u_mag','g_mag','r_mag','i_mag','z_mag', # SDSS
-                    'I_mag','J_mag','H_mag','K_mag',         # 2MASS
+                    'I_mag',
+                    # 'J_mag','H_mag','K_mag',         # 2MASS
                     'W1_mag','W2_mag','W3_mag','W4_mag',     # WISE
                     'NUV_mag','FUV_mag'                      # GALEX
                     ]
@@ -131,20 +152,20 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         datasetname = 'SDSS12 x GALEX x WISE x 2MASS'
 
 #%% GALEX first 10 million
-    if name.lower() == 'galex10k':
+    if name.lower() == 'galex10k': # 999999
         redshift = False
         magnames = [
             # 'FUV', Very few measurements
             'NUV']
         df = pd.read_csv(path + '/GALEX/vizier_II_312_ais_20220606_10million.csv',
-                         sep = ',', index_col = False, 
+                         sep = ',', index_col = False,
                          usecols = cols)
         datasetname = 'GALEX'
         # if redshift:
         #     df.rename(columns={'zsp':'redshift'}, inplace=True)
-            
-#%% SDSS16QSO  
-    if name.lower() == 'sdss16qso':
+
+#%% SDSS16QSO
+    if name.lower() == 'sdss16qso': # 750414
        redshift = True
        fields = ['_RAJ2000','_DEJ2000','recno','SDSS','RAJ2000','DEJ2000',
                  'Plate','MJD','Fiber','Class','QSO','z','r_z','umag','gmag',
@@ -162,8 +183,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
        df.rename(columns={'z':'redshift'}, inplace=True)
        datasetname = 'SDSS quasar catalog, sixteenth data release (DR16Q)'
 
-#%% SDSS9 QSO   
-    if name.lower() == 'sdss9qso':
+#%% SDSS9 QSO
+    if name.lower() == 'sdss9qso': # 230096
        redshift = True
        fields = ['_RAJ2000','_DEJ2000','mode','q_mode','cl','SDSS9','m_SDSS9',
                  'Im','objID','RA_ICRS','DE_ICRS','ObsDate','Q','umag','e_umag',
@@ -171,18 +192,18 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
        magnames = ['umag','gmag','rmag', 'imag', 'zmag']
        # cols = ('umag', 'gmag', 'rmag', 'imag', 'zmag', 'zsp')
        df = pd.read_csv(path + '/SDSS/vizier_V_139_sdss9_20201125.csv',
-                        sep = ',', header = 0, index_col = False, 
+                        sep = ',', header = 0, index_col = False,
                         usecols = cols)
        df = df.replace(-9999, np.nan)
        df.rename(columns={'zsp':'redshift'}, inplace=True)
        # df = df.drop(['q_mode', 'm_SDSS9', 'objID'], axis = 1)
        datasetname = 'SDSS Catalog, Data Release 9 QSOs'
 #%% SDSS12
-    if name.lower() == 'sdss12':
+    if name.lower() == 'sdss12': # 43102
         redshift = True
         magnames = ['umag','gmag','rmag','imag','zmag']
         df = pd.read_csv(path + '/SDSS/vizier_V_147_sdss12_20200818.csv',
-                         sep = ',', index_col = False, 
+                         sep = ',', index_col = False,
                          usecols = cols)
         datasetname = 'SDSS DR12'
         df = df.drop(columns = ['_RAJ2000', '_DEJ2000'])
@@ -191,8 +212,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
 
-#%% SDSS12 QSO   
-    if name.lower() == 'sdss12qso':
+#%% SDSS12 QSO
+    if name.lower() == 'sdss12qso': # 439273
         redshift = True
         #   QSOs with dz < 0.01 from SDSS DR12
         magnames = ['umag', 'gmag', 'rmag', 'imag', 'zmag']
@@ -206,9 +227,9 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df.rename(columns={'zsp':'redshift'}, inplace=True)
         # df = df.drop(['q_mode', 'm_SDSS12'], axis = 1)
         datasetname = 'SDSS DR12 QSOs'
-        
-#%% SDSS12 Spectroscopic sources   
-    if name.lower() == 'sdss12spec':
+
+#%% SDSS12 Spectroscopic sources
+    if name.lower() == 'sdss12spec': # 8857
         redshift = True
         magnames = ['umag', 'gmag', 'rmag', 'imag', 'zmag']
         df = pd.read_csv(path + '/SDSS/sdss12_spec_sources_DR16_quasars.csv',
@@ -221,9 +242,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         # df = df.drop(['q_mode', 'm_SDSS12'], axis = 1)
         datasetname = 'Spectroscopic sources from SDSS DR12 also in DR16Q'
 
-#%% SDSS12 filtered for good zsp and with PSF and Petrosian mags   
-    if name.lower() == 'sdss12_petrosian':
-        redshift = True
+#%% SDSS12 filtered for good zsp and with PSF and Petrosian mags
+    if name.lower() == 'sdss12_petrosian': # 3118641
         magnames = ["u'mag","upmag","uPmag","g'mag","gpmag","gPmag",
                     "r'mag","rpmag","rPmag","i'mag","ipmag","iPmag",
                     "z'mag","zpmag","zPmag"]
@@ -238,26 +258,30 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df.rename(columns={'zsp':'redshift'}, inplace=True)
         # df = df.drop(['q_mode', 'm_SDSS12'], axis = 1)
         datasetname = 'SDSS12 with Petrosian and PSF mags'
-        
+
 #%% sdssmags
-    if name.lower() == 'sdssmags':
+    if name.lower() == 'sdssmags': # 26301
         '''
         I think this data is from SDSS, WISE and GALEX, but I'm not sure
         what processing has been done on it. Steve gave me the data, but
         he doesn't remember. He refers to it in an email on 26/11/2020:
-          | I've attached my python code and the data file it used (this is produced by an awk script which pulls the relevent 
+          | I've attached my python code and the data file it used (this is produced by an awk script which pulls the relevent
           | fields from the master file which I've sent before).
         '''
         redshift = True
-        fields = ['redshift','u','g','r','i','zmag','W1','W2','NUV','FUV']
-        magnames = ['u','g','r','i','zmag','W1','W2','NUV','FUV']
+        fields = ['redshift','u','g','r','i','zmag',
+                  # 'W1','W2','NUV','FUV'
+                  ]
+        magnames = ['u','g','r','i','zmag',
+                    # 'W1','W2','NUV','FUV'
+                    ]
         df = pd.read_csv(path + '/SDSS/SDSS-mags.dat',
-                         sep = ' ', names = fields, index_col = False, 
+                         sep = ' ', names = fields, index_col = False,
                          usecols = cols)
         datasetname = 'Steve\'s SDSS data'
-        
+
 #%% GLEAM x SDSS16
-    if name.lower() == 'gleam_x_sdss16':
+    if name.lower() == 'gleam_x_sdss16': # 420
         redshift = True
 #         fields = ['_RAJ2000_1','_DEJ2000_1','GLEAM','RAJ2000','DEJ2000','Fpwide',
 #                   'Fintwide','eabsFpct','efitFpct','Fp076','Fint076','Fp084',
@@ -281,14 +305,14 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df = pd.read_csv(path + '/x-matches/gleam_x_sdss16_r10arcsec.csv',
                          sep = ',',
                          # names = fields,
-                         index_col = False, 
+                         index_col = False,
                          usecols = cols)
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GLEAM x SDSS 16, r=10"'
-        
+
 #%% GLEAM x SDSS12
-    if name.lower() == 'gleam_x_sdss12':
+    if name.lower() == 'gleam_x_sdss12': # 2028
         redshift = True
 #         fields = ['_RAJ2000_1','_DEJ2000_1','GLEAM','RAJ2000','DEJ2000','Fpwide',
 #                   'Fintwide','eabsFpct','efitFpct','Fp076','Fint076','Fp084',
@@ -312,15 +336,15 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df = pd.read_csv(path + '/x-matches/gleam_x_sdss12.csv',
                          sep = ',',
                          # names = fields,
-                         index_col = False, 
+                         index_col = False,
                          usecols = cols)
         df = df.drop(['_RAJ2000_1'], axis=1)
         df = df.drop(['_DEJ2000_1'], axis=1)
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GLEAM x SDSS 12, r=10"'
-#%% GLEAM x SIMBAD        
-    if name.lower() == 'gleam_x_simbad':
+#%% GLEAM x SIMBAD
+    if name.lower() == 'gleam_x_simbad': # 33012
         redshift = True
         # fields = ["angDist","X_RAJ2000","X_DEJ2000","GLEAM","RAJ2000","DEJ2000",
         #           "Fpwide","Fintwide","eabsFpct","efitFpct","Fp076","Fint076",
@@ -336,7 +360,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         #           "sp_type","morph_type","plx","plx_err","pmra","pmdec","pm_err_maj",
         #           "pm_err_min","pm_err_pa","size_maj","size_min","size_angle",
         #           "B","V","R","J","H","K","u","g","r","i","z"]
-        
+
         magnames = ["Fp076","Fint076",
                   "Fp084","Fp092","Fp099","Fp107",
                   "Fp115","Fp122","Fp130",
@@ -350,8 +374,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                           # names = fields
                           )
         datasetname = 'GLEAM x SIMBAD'
-#%% SDSS12 x UKIDSS    
-    if name.lower() == 'sdss12_x_ukidss':
+#%% SDSS12 x UKIDSS
+    if name.lower() == 'sdss12_x_ukidss': # 2417
         redshift = True
         fields = ['_RAJ2000_1','_DEJ2000_1','RA_ICRS','DE_ICRS','mode','q_mode',
                   'class','SDSS12','m_SDSS12','ObsDate','Q','umag','e_umag','gmag',
@@ -361,7 +385,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'Kdiam','Kell','Kflags','Separation'
                   ]
         magnames = ['umag','gmag','rmag','imag','zmag', 'Jmag', 'Kmag']
-        
+
         df = pd.read_csv(path + '/x-matches/sdss12_x_ukidss.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -370,8 +394,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'SDSS DR12 cross-match UKIDSS'
-#%% GALEX all-Sky Survey    
-    if name.lower() == 'galexais':
+#%% GALEX all-Sky Survey
+    if name.lower() == 'galexais': #
         redshift = False
         fields = ['recno','RAJ2000','DEJ2000','FUV','e_FUV','NUV','e_NUV','objid',
                   'tile','img','sv','r.fov','b','E(B-V)','FUV.b','e_FUV.b','NUV.b',
@@ -384,15 +408,15 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         magnames = [
             # 'FUV', Very few measurements
             'NUV']
-        
+
         df = pd.read_csv(path + '/GALEX/GALEX_II_312_ais.csv',
                          sep = ',', index_col = False,
                          header = 0,
                          names = fields
                          )
         datasetname = 'GALEX AIS (All-sky Imaging Survey)'
-#%% GALEX x SDSS12    
-    if name.lower() == 'galex_x_sdss12':
+#%% GALEX x SDSS12
+    if name.lower() == 'galex_x_sdss12': # 73906
         redshift = True
         fields = ['recno','RAJ2000','DEJ2000','FUV','e_FUV','NUV','e_NUV','objid',
                   'tile','img','sv','r.fov','b','E(B-V)','FUV.b','e_FUV.b','NUV.b',
@@ -408,8 +432,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         magnames = [
             # 'FUV', Very few measurements
             'NUV','umag','gmag','rmag','imag','zmag']
-        
-        df = pd.read_csv('D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/data_files/x-matches/galex_x_sdss12.csv',
+
+        df = pd.read_csv(path + '/x-matches/galex_x_sdss12.csv',
                           sep = ',', index_col = False,
                           header = 0,
                           names = fields
@@ -417,9 +441,9 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GALEX All-sky Survey X SDSS12'
-    
+
 #%% GALEX x SDSS12 x GLEAM
-    if name.lower() == 'galex_x_sdss12_x_gleam':
+    if name.lower() == 'galex_x_sdss12_x_gleam': # 565
         redshift = True
         fields = ['recno','RAJ2000_1','DEJ2000_1','FUV','e_FUV',
                   'NUV','e_NUV','objid','tile','img','sv','r.fov','b',
@@ -442,12 +466,12 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'Fint181','Fp189','Fint189','Fp197','Fint197','Fp204',
                   'Fint204','Fp212','Fint212','Fp220','Fint220','Fp227',
                   'Fint227','alpha','Fintfit200','Separation']
-        
-        magnames = ['Fp076','Fp084','Fp092','Fp099','Fp107', 'Fp115', 
+
+        magnames = ['Fp076','Fp084','Fp092','Fp099','Fp107', 'Fp115',
                     'Fp122','Fp130','Fp143','Fp151','Fp158','Fp166','Fp174',
                     'Fp181','Fp189','Fp197','Fp204','Fp212','Fp220','Fp227',
                     'alpha','FUV','NUV','umag','gmag','rmag','imag','zmag']
-        
+
         df = pd.read_csv(path + '/x-matches/galex_x_sdss12_x_gleam.csv',
                           sep = ',', index_col = False,
                           header = 0,
@@ -456,8 +480,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GALEX All-sky Survey X SDSS12 x GLEAM'
-#%% Milliquas x GLEAM    
-    if name.lower() == 'milli_x_gleam':
+#%% Milliquas x GLEAM
+    if name.lower() == 'milli_x_gleam': # 6834
         redshift = True
         fields = ['angDist','_RAJ2000_milli','_DEJ2000_milli','recno','RAJ2000_milli',
                   'DEJ2000_milli','Name',
@@ -479,7 +503,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'Fp212','Fp220','Fp227',
                   # 'alpha'
                   ]
-        
+
         df = pd.read_csv(path + '/x-matches/milliquas_x_gleam.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -494,7 +518,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
             df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'Milliquas GLEAM cross-match'
 #%% SDSS16
-    if name.lower() == 'sdss16':
+    if name.lower() == 'sdss16': # 28000
         redshift = True
         fields = ['_RAJ2000','_DEJ2000','objID','RA_ICRS','DE_ICRS','mode','class',
                   'clean','e_RA_ICRS','e_DE_ICRS','umag','gmag','rmag','imag','zmag',
@@ -502,7 +526,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'zph','e_zph','<zph>','Q','SDSS16','Sp-ID','MJD'
                   ]
         magnames = ['umag','gmag','rmag','imag','zmag']
-        
+
         df = pd.read_csv(path + '/SDSS/vizier_V_154_sdss16_20220307.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -513,13 +537,13 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'SDSS 16'
-#%% New Fitted    
-    if name.lower() == 'new_fitted':
+#%% New Fitted
+    if name.lower() == 'new_fitted': # 43699
         redshift = True
         fields = ['idx', 'z_spec','flag_TO','SI','S_400','S_1p4','S_5','S_8p7'
                   ]
         magnames = ['SI','S_400','S_1p4','S_5','S_8p7']
-        
+
         df = pd.read_csv(path + '/out.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -528,8 +552,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'z_spec':'redshift'}, inplace=True)
         datasetname = 'The Million Quasars catalogue'
-#%% Old fitted    
-    if name.lower() == 'old_fitted':
+#%% Old fitted
+    if name.lower() == 'old_fitted': # 43699
         sample = 'PdEAK'
         redshift = True
         fields = ['no','NED','zspec','z_NED','class','type',' Qpct','no_radio','fit',
@@ -540,13 +564,13 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   ]
         if sample == 'PEAK':
             magnames = ['SI', 'nu_peak','S_peak','thick','thin']
-        
+
         else:
             magnames = ['TO_flux','SI',
                   'nu_peak','S_peak','thick','thin','S_70','S_150','S_400','S_700','S_1',
                   'S_1p4','S2p7','S_5','S_8p7','S_15','S_20','u','g','r','i','z','W1',
                   'W2','NUV','FUV']
-        
+
         df = pd.read_csv(path + '/new_fitted.dat',
                          sep = ' ', index_col = False,
                          header = None,
@@ -555,8 +579,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zspec':'redshift'}, inplace=True)
         datasetname = 'The Million Quasars (Milliquas) catalogue'
-#%% XLSOptn    
-    if name.lower() == 'xlsoptn':
+#%% XLSOptn
+    if name.lower() == 'xlsoptn': # 31585
         redshift = True
         fields = ['_RAJ2000','_DEJ2000','Xcatname','RACtpdeg','DECtpdeg','zspec',
                   'uSDSSmag','gSDSSmag','rSDSSmag','iSDSSmag','zSDSSmag','uCFHTmag',
@@ -571,7 +595,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'YVISTAmag','JVISTAmag','HVISTAmag','KVISTAmag','JUKIDSSmag',
                   'HUKIDSSmag','KUKIDSSmag','KWIRcammag','IRAC3.6mag','IRAC4.5mag',
                   'GALEXFUVmag','GALEXNUVmag','WISE1mag','WISE2mag','WISE3mag']
-        
+
         df = pd.read_csv(path + '/vizier_IX_52_3xlsoptn_20220120.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -580,8 +604,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zspec':'redshift'}, inplace=True)
         datasetname = 'Spectrophotometric catalog of galaxies'
-#%% XXGal    
-    if name.lower() == 'xxgal':
+#%% XXGal
+    if name.lower() == 'xxgal': # 24336
         redshift = True
         fields = ['_RAJ2000','_DEJ2000','Index','RAJ2000','DEJ2000','z','r_z','f_z',
                   'q_z','DRr200-1','DRr200-2','DRr200-3','DRr200-4','DRr200-5','Dv-1',
@@ -591,7 +615,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
 
                   ]
         magnames = ['uMag','gMag','rMag','iMag','yMag','zMag']
-        
+
         df = pd.read_csv(path + '/vizier_IX_52_xxlngal_20220120.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -600,14 +624,14 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'Spectrophotometric catalog of galaxies'
-#%% Milliquas    
-    if name.lower() == 'milliquas':
+#%% Milliquas
+    if name.lower() == 'milliquas': # 31561
         redshift = True
         fields = ['recno','RAJ2000','DEJ2000','Name','Type','Rmag','Bmag','Comment',
                   'R','B','z','Qpct','XName','RName'
                   ]
         magnames = ['Rmag','Bmag']
-        
+
         df = pd.read_csv(path + '/Milliquas/vizier_VII_290_catalog_20211213_fixed.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -622,8 +646,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'The Million Quasars (Milliquas) catalogue, version 7.2'
-#%% FIRST-NVSS    
-    if name.lower() == 'first-nvss':
+#%% FIRST-NVSS
+    if name.lower() == 'first_nvss': # 20648
         redshift = True
         fields = ['_RAJ2000','_DEJ2000','recno','UNIQ_ID','RAJ2000','DEJ2000',
                   'Fiflux','Nflux','Wflux','Gflux','SNgmag','SNimag','MJD',
@@ -631,7 +655,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'SBDist','Plate1','MJD1','Ori'
                   ]
         magnames = ['Fiflux','Nflux','Wflux','Gflux','SNgmag','SNimag']
-        
+
         df = pd.read_csv(path + '/vizier_J_ApJ_699_L43_catalog_20220117.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -640,8 +664,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'FIRST-NVSS-SDSS AGN sample catalog'
-#%% GLEAM x NVSS, radius 5" 
-    if name.lower() == 'gxn' or name.lower() == 'nxg':
+#%% GLEAM x NVSS, radius 5"
+    if name.lower() == 'gxn': # 69745
         redshift = False
         fields = ['angDist','_RAJ2000','_DEJ2000','NVSS','RAJ2000','DEJ2000',
                   'e_RAJ2000','e_DEJ2000','S1.4','e_S1.4','l_MajAxis','MajAxis',
@@ -654,7 +678,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'Fp189','Fint189','Fp197','Fint197','Fp204','Fint204','Fp212',
                   'Fint212','Fp220','Fint220','Fp227','Fint227','alpha','Fintfit200']
         magnames = [mag for mag in fields if mag.startswith('Fp') and not mag.startswith("Fpw")]
-        
+
         df = pd.read_csv(path + '/x-matches/gleam_x_nvss_5_arcsec.csv',
                          sep = ',', index_col = False,
                          header = 0,
@@ -663,8 +687,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         if redshift:
             df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GLEAM x NVSS, radius 5"'
-#%% GLEAM x NVSS x SDSS12 radius 5" 
-    if name.lower() == 'gxnxs':
+#%% GLEAM x NVSS x SDSS12 radius 5"
+    if name.lower() == 'gxnxs': # 28424
         redshift = True
         fields = ['angDist','angDist','_RAJ2000','_DEJ2000','NVSS','RAJ2000',
                   'DEJ2000','e_RAJ2000','e_DEJ2000','S1.4','e_S1.4','l_MajAxis',
@@ -692,8 +716,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          usecols = cols)
         df.rename(columns={'zsp':'redshift'}, inplace=True)
         datasetname = 'GLEAM x NVSS x SDSS12 radius 5"'
-#%% eMERLIN        
-    if name.lower() == 'emerlin':
+#%% eMERLIN
+    if name.lower() == 'emerlin': # 395
         redshift = False
         fields = ['IslId', 'RAdeg', 'e_RAdeg', 'DEdeg', 'e_DEdeg', 'FluxT',
                   'e_FluxT', 'FluxP', 'e_FluxP', 'Maj', 'e_Maj', 'Min', 'e_Min',
@@ -707,8 +731,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          header = 0,
                          usecols = cols)
         datasetname = 'SuperCLASS eMERLIN survey'
-#%% VLA        
-    if name.lower() == 'vla':
+#%% VLA
+    if name.lower() == 'vla': # 887
         redshift = False
         fields = ['GausId','IslId','SourceId','WaveId','RAJ2000','DEJ2000',
                   'FluxT','FluxP','Maj','Min','PA','DCMaj','DCMin','DCPA',
@@ -721,8 +745,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          header = 0,
                          usecols = cols)
         datasetname = 'SuperCLASS VLA survey'
-#%% Subaru    
-    if name.lower() == 'subaru':
+#%% Subaru
+    if name.lower() == 'subaru': # 376380
         redshift = False
         fields = ['RAJ2000','DEJ2000','Bmag','Vmag','rmag','imag','zmag',
                       'ymag','[3.6]','[4.5]','Id','za','chiza','Nfilt','e1',
@@ -736,8 +760,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                              usecols = cols)
         df.rename(columns={'za':'redshift'}, inplace=True)
         datasetname = 'SuperCLASS Subaru survey'
-#%% GLEAM    
-    if name.lower() == 'gleam':
+#%% GLEAM
+    if name.lower() == 'gleam': # 307455
         redshift = False
         fields = ['_RAJ2000','_DEJ2000','GLEAM','RAJ2000','DEJ2000','Fpwide',
                   'Fintwide','eabsFpct','efitFpct','Fp076','Fint076','Fp084',
@@ -747,7 +771,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                   'Fp174','Fint174','Fp181','Fint181','Fp189','Fint189','Fp197',
                   'Fint197','Fp204','Fint204','Fp212','Fint212','Fp220','Fint220',
                   'Fp227','Fint227','alpha','Fintfit200']
-        magnames = ['Fp076','Fp084','Fp092','Fp099','Fp107', 'Fp115', 
+        magnames = ['Fp076','Fp084','Fp092','Fp099','Fp107', 'Fp115',
                     'Fp122','Fp130','Fp143','Fp151','Fp158','Fp166','Fp174',
                     'Fp181','Fp189','Fp197','Fp204','Fp212','Fp220','Fp227', 'alpha']
         df = pd.read_csv(path + '/GLEAM/vizier_VIII_100_gleamegc_20210608.csv',
@@ -756,19 +780,19 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          usecols = cols)
         df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'GaLactic and Extragalactic All-sky MWA survey'
- 
-#%% Markarian    
-    if name.lower() == 'markarian':
+
+#%% Markarian
+    if name.lower() == 'markarian': # 1469
         redshift = False
         fields = ['name','ra','dec','vmag','major_axis','minor_axis','redshift',
                   'bv_color','ub_color','class']
         magnames = ['vmag','bv_color','ub_color']
-        df = pd.read_csv(path + '/markarian.csv',
-                         sep = ',', header = 0, index_col = False, 
+        df = pd.read_csv(path + '/Markarian/markarian.csv',
+                         sep = ',', header = 0, index_col = False,
                          usecols = cols)
         datasetname = 'First Byurakan Survey (Markarian) Catalog of UV-Excess Galaxies'
-#%% LBQS       
-    if name.lower() == 'lbqs':
+#%% LBQS
+    if name.lower() == 'lbqs': # 1055
         redshift = True
         fields = ['name','ra','dec','bjmag','redshift','field_info']
         magnames = ['bjmag']
@@ -777,7 +801,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          usecols = cols)
         datasetname = 'Large Bright Quasar Survey'
 #%% LQAC
-    if name.lower() == 'lqac':
+    if name.lower() == 'lqac': # 20000
         redshift = True
         fields = ['name','ra','dec','vmag','rmag','kmag','flux_20_cm','redshift','abs_imag']
         magnames = ['vmag','rmag','kmag']
@@ -785,42 +809,42 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          sep = ',', header = 0, index_col = False,
                          usecols = cols)
         datasetname = 'Large Quasar Astrometric Catalog, 3rd Release'
-#%% allWISE AGN    
-    if name.lower() == 'allwiseagn':
+#%% allWISE AGN
+    if name.lower() == 'allwiseagn': # 10000
         redshift = True
         fields = ['name','ra','dec','w1w2_color','w2w3_color','w1_mag','gmag','redshift']
         magnames = ['w1w2_color','w2w3_color','w1_mag','gmag']
         df = pd.read_csv(path + '/WISE/allwiseagn.csv',
-                         sep = ',', header = 0, index_col = False, 
+                         sep = ',', header = 0, index_col = False,
                          usecols = cols)
         datasetname = 'AllWISE Catalog of Mid-IR AGNs'
-#%% Crampton    
-    if name.lower() == 'crampton': # no z measurement
+#%% Crampton
+    if name.lower() == 'crampton': # 777
         redshift = False
         fields = ['_RAJ2000','_DEJ2000','recno','Rem','Name','RA1950','DE1950',
                   'Bmag','n_Bmag','redshift','u_z','Nature','_RA.icrs','_DE.icrs']
         magnames = ['Bmag']
         cols = ['_RAJ2000','_DEJ2000','recno','Bmag','z','_RA.icrs','_DE.icrs']
         df = pd.read_csv(path + '/vizier_VII_143_catalog_20201104.csv',
-                         sep = ',', header = 0, index_col = False, 
+                         sep = ',', header = 0, index_col = False,
                          usecols = cols)
         df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'Quasar Candidates (Crampton+ 1985-1990)'
-#%% Rood    
-    if name.lower() == 'rood': # no z measurement
+#%% Rood
+    if name.lower() == 'rood': # 3981
         redshift = False
         fields = ['_RAJ2000','_DEJ2000','recno','Seq','UGC','OtherName','RA1950',
                   'DE1950','Pmag','zFlag','r_e_HVel','HVel','e_HVel','u_e_HVel',
                   '_RA.icrs','_DE.icrs']
         magnames = ['Pmag']
         df = pd.read_csv(path + '/vizier_VII_36_catalog_20201104.csv',
-                         sep = ',', header = 0, index_col = False, 
+                         sep = ',', header = 0, index_col = False,
                          usecols = cols)
         df.rename(columns={'HVel':'redshift', 'e_HVel':'e_z', 'u_e_HVel':'uncertain z'},
                   inplace=True)
         datasetname = 'Galaxy Redshifts (Rood 1980)'
- #%% DEEP2   
-    if name.lower() == 'deep2':
+ #%% DEEP2
+    if name.lower() == 'deep2': # 52989
         redshift = True
         magnames = ['Bmag','Rmag','Imag', 'EBV']
         # cols = ['Bmag','Rmag','Imag','RG','BMag', 'z']
@@ -829,16 +853,17 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          )
         df.rename(columns={'z':'redshift'}, inplace=True)
         datasetname = 'DEEP2 Redshift Survey, DR4'
-        
+
+        if redshift:
+            df = df[df['redshift'] > 0]
+            df.insert(len(df.columns)-1, 'redshift', df.pop('redshift')) # move redshift column to the end
+
         deep2_agn = df[df['Cl'] == 'A']
         deep2_gal = df[df['Cl'] == 'G']
         deep2_stars = df[df['Cl'] == 'S']
 
-        # df = deep2_gal
-        
-        
-#%% PanSTARRS    
-    if name.lower() == 'panstarrs': # no z measurement
+#%% PanSTARRS
+    if name.lower() == 'panstarrs': # 999999
         redshift = False
         fields = ['_RAJ2000','_DEJ2000','RAJ2000','DEJ2000','objID','f_objID',
                   'Qual','e_RAJ2000','e_DEJ2000','Epoch','Ns','Nd','gmag',
@@ -851,8 +876,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                          sep = ',', header = 0, index_col = False, usecols = cols)
         datasetname = 'Pan-STARRS release 1 (PS1) Survey - DR1'
 
-#%% VIMOS    
-    if name.lower() == 'vimos':
+#%% VIMOS
+    if name.lower() == 'vimos': # 8981
         redshift = False
         print("This dataset contains infs or NaNs; neural network may fail.")
         fields = ['ID','redshift','q_z','phf','UEmag','B','V','R','I','J',
@@ -862,8 +887,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df = pd.read_csv(path + '/vizier_III_250_vvds_dp_20200908.csv', skiprows = [0],
                          sep = ',', names = fields, index_col = False, usecols = cols)
         datasetname = 'VIMOS VLT deep survey (VVDS-DEEP)'
-#%% ugriz    
-    if name.lower() == 'ugriz':
+#%% ugriz
+    if name.lower() == 'ugriz': # 33643
         redshift = False
         print("This dataset contains infs or NaNs; neural network may fail.")
         #   ugriz data from Steve for start of PhD
@@ -880,7 +905,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         # df = df.drop(['ignore'], axis = 1)
         datasetname = 'ugriz'
 #%% SDSS
-    if name.lower() == 'nedfirst50k':
+    if name.lower() == 'nedfirst50k': # 49738
         redshift = False
         #   SDSS data
         fields = ['ignore', 'NED','redshift','ez','type','class','no_radio','no_UV',
@@ -897,7 +922,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         datasetname = 'SDSS'
 
 #%% MgII
-    if name.lower() == 'mgii':
+    if name.lower() == 'mgii': # 29008
         redshift = True
         fields = ['no','NED','redshift','type','S_21','freq_21',
                        'SI_flag','U','B','V','R','I','J','H','K','W1','W2','W3',
@@ -914,10 +939,10 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         # df = df.drop_duplicates(['NED'], keep='first')
         # df = df.drop(['SI_flag'], axis = 1)
         df['chord'] = (df['I']-df['W2']) / (df['W3']-df['U'])
-        
+
         datasetname = 'MgII'
-#%% LARGESS 
-    if name.lower() == 'largess':
+#%% LARGESS
+    if name.lower() == 'largess': # 10944
         redshift = True
         fields = ['no','NED','redshift','q_z','zsource','EWOIII','OIII_SN',
                           'VClass','BClass','SI','TO','flag_TO','L_21',
@@ -932,8 +957,8 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         # df = df.drop_duplicates(['NED'], keep='first')
         # df = df.drop(['VClass', 'BClass'], axis = 1)
         datasetname = 'LARGESS'
-#%% ICRF    
-    if name.lower() == 'icrf':
+#%% ICRF
+    if name.lower() == 'icrf': # 1493
         redshift = True
         fields = ['no','NED','redshift','SI','TO','flag_TO','type','L_21','P_21','L_UV',
                   'Q','flag_uv','U','B','V','R','I','J','H','K','W1','W2','W3',
@@ -945,7 +970,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df = pd.read_csv(path + '/optical_data/Hunstead_mags+SPITZER_0.050.dat',
                          sep = ' ', names = fields, index_col = False, usecols = cols)
         # df = df.drop_duplicates(['NED'], keep='first')
-        
+
         datasetname = 'ICRF2'
 
 #%% Test dataframe
@@ -953,7 +978,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         redshift = True
         df = pd.read_csv(path + '/test_dataset.csv',
                          sep = ',', index_col = False, header = 0)
-        
+
         datasetname = 'Test dataset'
         colours = False
         print('Colours cannot be computed for the test frame')
@@ -964,31 +989,35 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         redshift = True
         df = pd.read_csv(path + '/test_dataset1.csv',
                          sep = ',', index_col = False, header = 0)
-        
+
         datasetname = 'Test dataset 1'
         magnames = df.columns[3:-1]
-        
+
 #%% Test dataframe 2
     if name.lower() == 'test2':
         redshift = True
         df = pd.read_csv(path + '/test_dataset2.csv',
                          sep = ',', index_col = False, header = 0)
-        
+
         datasetname = 'Test dataset 2'
         magnames = df.columns[3:-1]
 
 #%% Tidy the data
+    if redshift:
+        df = df[df['redshift'] > 0]
+        df.insert(len(df.columns)-1, 'redshift', df.pop('redshift')) # move redshift column to the end
+
     mgf = df[magnames]
     df = df.where(df != -999, np.nan)
     mgf = mgf.where(mgf != -999, np.nan)
-    
+
     print('{2} sources loaded from {0} with the following bands:\n{1}\n'.format(datasetname, magnames, df.shape[0]))
 
     contains_z = ['z', 'zsp', 'redshift', 'z_sp']
     for synonym in contains_z:
         if(synonym in df.columns):
             redshift = True
-            
+
     # Inspect structure of missing data; requires dropna = False in qf.loaddata()
     if dropna:
         df = df.dropna(axis = 0, how = 'any')
@@ -1000,7 +1029,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
                 color = (0, .6, .8),
                 fontsize = 10,
                 figsize = (10, 6))
-    
+
     if colours:
         # Compute colours using the magnitudes columns and add to the dataset
         colours = compute_colours(mgf); colours = colours.iloc[:, len(magnames):] # compute colours and add colours to magnitudes dataframe
@@ -1008,7 +1037,7 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         df = df[allcolumns]                     # dataset is now magnitudes and redshift column
         df = pd.concat([df, colours], axis = 1) # dataset is now magnitudes and colours
         print('Colours have been computed and added to the dataset.')
-        
+
     if impute_method == 'max':
         df = df.fillna(df.max()) # using max() assumes missing data are due to detection limit
         mgf = mgf.fillna(mgf.max())
@@ -1022,10 +1051,6 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
         mgf = impute_mean.transform(mgf) # converts to np.array
         mgf = pd.DataFrame(mgf, columns = magnames) # back to DataFrame
         print('Missing values have been imputed with the mean for each column.')
-        
-    if redshift:    
-        df = df[df['redshift'] > 0]
-        df.insert(len(df.columns)-1, 'redshift', df.pop('redshift')) # move redshift column to the end
 
     # if ['RAJ2000', 'DEJ2000'] in df.columns:
     #     coords = df[['RAJ2000', 'DEJ2000']].to_numpy()
@@ -1035,19 +1060,19 @@ def loaddata(name, colours = False, impute_method = None, cols = None,
 
 ###############################################################################
 #%% Create test dataframe
-def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'):
+def make_test(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'):
     '''
     Generates a test dataset with the following structure:
-        
+
         Name      | RAJ2000 | DEJ2000 | mag(n)  | redshift
         -------------------------------------------------
         Galaxy (n)| (random)| (random)| (random)| (random)
-            
+
     n_galaxies: number of rows of galaxies, each numbered sequentially from 1
     n_mags    : number of columns of magnitudes, with a random element
                 in each mag(n) column == np.nan
     seed      : customizable so you can generate different datasets
-    
+
     NOTE: n_mags must be <= n_galaxies
     '''
     if seed:
@@ -1061,9 +1086,9 @@ def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'
     except IndexError:
         print('Cannot generate dataset: n_galaxies ({0}) must be >= n_mags ({1})'.format(n_galaxies, n_mags))
     np.random.shuffle(data)
-    
+
     magnames = [f'mag{i}' for i in range(1, n_mags + 1)]
-    
+
     df = pd.DataFrame(data, columns=magnames)
     df.insert(0, 'Name', [f'Galaxy {i}' for i in range(1, n_galaxies + 1)])
 
@@ -1077,15 +1102,50 @@ def make_test_df(n_galaxies=10, n_mags=5, seed=0, file_name = 'test_dataset.csv'
     df.insert(2, 'DEJ2000', df.pop('DEJ2000'))
 
     # Save as file
-    df.to_csv(path + '/' + file_name, index = False)
+    path = 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/data_files/'
+    df.to_csv(path + file_name, index = False)
 
 #%% The rest
 
-def nn_report(x):
-    '''
-    To be done
-    '''
-    pass        
+def grid_search_model(model, X_train, y_train, y_test, y_pred):
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.metrics import mean_squared_error
+
+    parameters = {'loss'         : ['absolute_error', 'squared_error', 'huber', 'quantile'], # was squared error first
+                  'optimizer'    : ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam'],
+                  'epochs'       : [10],
+                  'batch_size'   : [5, 10, 50]}
+                  # what else can I try in here?
+
+    grid = GridSearchCV(estimator = model,
+                        param_grid = parameters,
+                        scoring = 'accuracy',
+                        n_jobs = None, # not -1
+                        refit = 'boolean',
+                        verbose = 0)
+    grid_result = grid.fit(X_train, y_train)
+
+    mse_krr = mean_squared_error(y_test, y_pred)
+    print(mse_krr)
+    print(grid.best_params_)
+    print(grid.best_estimator_)
+    return (mse_krr, grid.best_params_, grid.best_estimator_)
+
+###############################################################################
+
+def print_two_lists(x, y):
+    border = '-'*25
+    separator = '\t\t|\t'
+    results_list = zip(x, y)
+    print('List 1' + separator + 'List 2')
+    print(border)
+    for mean, dev, *_ in results_list:
+        print(f"{mean:7f}\t|\t{dev:7f}")
+    print(border)
+    print('Average of list1 = {avg_list1}\nAverage of list2 = {avg_list2}'.format(
+        avg_list1=np.mean(x),
+        avg_list2=np.mean(y)
+    ))
 
 ###############################################################################
 
@@ -1109,11 +1169,10 @@ def compute_colours(magnitudes):
             for i, x in enumerate(magnitudes.columns)]
     for x, y in comb:
       magnitudes[f'{x} - {y}'] = magnitudes[x] - magnitudes[y]
-    
+
     return magnitudes
 
 ###############################################################################
-
 
 def plot_z(x_var, y_var, datasetname, ax = None):
     '''Displays a plot of x versus y, colour-coded with a colourmap.'''
@@ -1143,7 +1202,7 @@ def plot_z(x_var, y_var, datasetname, ax = None):
         # fig.colorbar()
         ax.grid()
         ax.plot(x_var, x_var, 'r-.')
-        # ax.set_title(title)
+        ax.set_title(title)
         ax.set_xlabel(r'$z_{spec}$')
         ax.set_ylabel('Predicted z')
         # ax.set_ylim(0, 4)
@@ -1154,7 +1213,7 @@ def plot_z(x_var, y_var, datasetname, ax = None):
 def plot_z_sets(set1, set2, datasetname, ax = None):
     # valid_set['Delta z'] = y - x
     # x, y = valid_set['z'], valid_set['Delta z']
-    
+
     fig, ax = plt.subplots(figsize = (12, 9))
     ax.hist(set1,
             bins = 100,
@@ -1179,7 +1238,7 @@ def plot_z_sets(set1, set2, datasetname, ax = None):
 def plot_deltaz(x_var, y_var, datasetname, ax = None):
     # valid_set['Delta z'] = y - x
     # x, y = valid_set['z'], valid_set['Delta z']
-    
+
     # theta = np.polyfit(x_var, y_var, 2)
     # print("Curve parameters: {0}".format(theta))
     # y_line = theta[2] + theta[1] * pow(x_var, 1) + theta[0] * pow(x_var, 2)
@@ -1233,11 +1292,11 @@ def plot_delta_z_hist(values, datasetname, model, ax = None):
             ax.axvline(x = std,
                         color = mean_std_colour,
                         linestyle = std_style)
-        
+
         plt.legend(loc = legend_pos)
     else:
         # ax.set_title(title)
-        
+
         # plt.xlim(-1.5, 1.5)
         ax.set_xlabel(r'$\Delta z$')
         ax.set_ylabel('Count')
@@ -1265,9 +1324,9 @@ def plot_delta_z_hist(values, datasetname, model, ax = None):
     #     at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
     #     ax.add_artist(at)
         # plt.annotate('Text', (1,1))
-        
+
     plt.show()
-    
+
 ###############################################################################
 
 def kurt_result(data):
@@ -1280,7 +1339,11 @@ p-value: {2:.2g}'''.format(kur, z_score, p_value))
 
 ###############################################################################
 
-def build_nn_model(n, hyperparameters, loss, metrics, opt):
+def build_nn_model(n,
+               hyperparameters = [100, 'relu', 100, 'relu', 100, 'relu'],
+               loss = 'mae',
+               metrics = ['mae'],
+               opt = 'Nadam'):
     ''' Define the prediction model. The NN takes magnitudes as input features
     and outputs the redshift. n should be len(train_set.keys())'''
     model = keras.Sequential([
@@ -1291,17 +1354,9 @@ def build_nn_model(n, hyperparameters, loss, metrics, opt):
 
     keras.layers.Dense(1) # 1 output (redshift)
     ])
-    
-    # if optim == "Adam":
-    #     model.compile(loss=loss,
-    #             optimizer = keras.optimizers.Adam(0.001),
-    #             metrics = metrics)
-    
-    # if optim == "RMSprop":
-    model.compile(loss=loss,
-                  optimizer = opt,
-            # optimizer = keras.optimizers.RMSprop(0.001),
-            metrics = metrics)
+
+    model.compile(loss=loss, optimizer = opt, metrics = metrics)
+    print(model.summary())
     return model
 
 ###############################################################################
@@ -1331,36 +1386,36 @@ def plot_z_boxplot(dataset, x, y, datasetname, outliers, ax = None):
         ax.set_title('Distribution of statistical parameters\nfor %s'%datasetname)
         ax.tight_layout()
     plt.show()
-        
+
 ###############################################################################
 
 def findCombos(x, xname, bands, names, operation, dataset, threshold, n, calc_tau = False):
     '''
     Find and plot all pair-wise combinations of magnitudes
-    
+
     Parameters
     ----------
     x;
-    
+
     xname;
-    
+
     bands; list of np.arrays; a list of the wavelength bands used
-    
+
     names; list of str; a list of the names of the wavelength bands
-    
+
     operation; str; '-', '+', '*' or '/'
-    
+
     dataset;
-    
+
     threshold; a float for the minimum value of r^2
-    
+
     n; a float to represent the minimum value of r^2*n
-    
+
     calc_tau; Boolean; default = False
-    
+
     Returns
     -------
-    
+
     '''
     count = 0
     rVals = []
@@ -1413,7 +1468,7 @@ def findCombos(x, xname, bands, names, operation, dataset, threshold, n, calc_ta
                 residRange = max(resids) - min(resids)
                 ranges.append(residRange)
                 r2n = (rValue**2)*results.nobs
-                
+
                 #   Save the combinations with |r-val| > threshold
                 if abs(rValue) > threshold and r2n > n:
                     bestComboNames.append(name)
@@ -1423,10 +1478,10 @@ def findCombos(x, xname, bands, names, operation, dataset, threshold, n, calc_ta
                     bestr2n.append(r2n)
     with open(filename, 'w') as outfile:
         saveBest(bestComboNames, bestCombosrVals, bestResults,
-                     bestTau, threshold, n, bestr2n, outfile, calc_tau)  
+                     bestTau, threshold, n, bestr2n, outfile, calc_tau)
 
     print("\n%d combinations saved to %s"%(len(bestComboNames), filename))
-                    
+
 #    print('Highest r-value of %g occurred for %s'%(max(rVals), combinationNames[rVals.index(max(rVals))]))
 #    print('Lowest r-value of %g occurred for %s'%(min(rVals), combinationNames[rVals.index(min(rVals))]))
 #    print('Lowest residual range of %g for %s'%(min(ranges), combinationNames[ranges.index(min(ranges))]))
@@ -1435,12 +1490,12 @@ def findCombos(x, xname, bands, names, operation, dataset, threshold, n, calc_ta
     return combinations, combinationNames, rVals, bestResults, bestr2n
 
 ###############################################################################
-  
+
 def plotSelected(x, xname, arraysToPlot, arrayNames, dataset, residuals = False,
                  calc_tau = False):
     '''
     Plot magnitude-log(z) graphs for selected arrays.
-    Save statistical parameter results for each in stats_results_selected.txt 
+    Save statistical parameter results for each in stats_results_selected.txt
     '''
     colors = iter(cm.tab20b(np.linspace(0.1,1,len(arraysToPlot)*2)))
     for array, name in zip(arraysToPlot, arrayNames):
@@ -1454,7 +1509,7 @@ def plotSelected(x, xname, arraysToPlot, arrayNames, dataset, residuals = False,
         if residuals:
             residuals = True
     return results, resids, params, fit, equation, tau
-                
+
 
 ###############################################################################
 
@@ -1467,7 +1522,7 @@ def computeLinearStats(x, xname, y, yName, calc_tau = False):
     Returns the results summary, residuals, statistical parameters in a list,
     the best fit equation, and Kendall's tau.
     '''
-    
+
     #   Mask NaN values in both axes
     mask = ~np.isnan(y) & ~np.isnan(x)
     #   Compute model parameters
@@ -1478,8 +1533,8 @@ def computeLinearStats(x, xname, y, yName, calc_tau = False):
         tau = stats.kendalltau(x, y, nan_policy= 'omit')
     else:
         tau = [1, 1]    #   Use this to exclude computation of tau
-#    
-    
+#
+
     #   Compute fit parameters
     params = stats.linregress(x[mask], y[mask])
     fit = params[0]*x + params[1]
@@ -1511,7 +1566,7 @@ def graph(x, xname, y, yName, dataset, colour, residuals = False, calc_tau = Fal
     line, its equation and its regression coefficient, as well as Kendall's tau
     and the total number of points plotted.
     '''
-    
+
     arrayresults, arrayresids, arrayparams, arrayfit, arrayequation, arraytau = computeLinearStats(x,
                                                                     xname,
                                                                     y,
@@ -1537,7 +1592,7 @@ def graph(x, xname, y, yName, dataset, colour, residuals = False, calc_tau = Fal
                                 arrayresults.nobs*arrayparams[2]**2),
                                 c = 'r', lw = 5, alpha = 0.8)
     plt.plot(x, arrayfit+np.nanstd(y), 'r:', lw = 5, alpha = 0.8, label = '_nolegend_')
-    plt.plot(x, arrayfit-np.nanstd(y), 'r:', lw = 5, alpha = 0.8, label = '_nolegend_')  
+    plt.plot(x, arrayfit-np.nanstd(y), 'r:', lw = 5, alpha = 0.8, label = '_nolegend_')
 #    plt.scatter(x, 0.28*x**2+2.48*x+14.12, s=5, c ='k', label = None)
     legendfont = 25
     labelfont = 25
@@ -1557,17 +1612,17 @@ def graph(x, xname, y, yName, dataset, colour, residuals = False, calc_tau = Fal
 #    plt.ylim(-.9)
     plt.show()
     return arrayresults, arrayresids, arrayparams, arrayfit, arrayequation, arraytau
-  
+
 ###############################################################################
- 
+
 def plotResids(x, xname, y, yName, dataset, colour, axis):
     '''
     Takes as an argument two arrays, one for x and one y, and a string for the
     name of the y-variable.
-    Displays a scatter plot of the x and y variables, and a scatter plot of 
+    Displays a scatter plot of the x and y variables, and a scatter plot of
     the residuals of the y-variable.
     '''
-    
+
     # fit model
     model = sm.OLS(y, sm.add_constant(x), missing='drop').fit()
     upper = max(model.resid)
@@ -1577,10 +1632,10 @@ def plotResids(x, xname, y, yName, dataset, colour, axis):
                 alpha = .5,
                 label = '''Range = %g
 Average = %.2e'''%(upper - lower, abs(sum(model.resid)/len(model.resid))))
-    
+
     print('Range of residuals for %s: %g'%(yName, upper - lower))
     print('Mean of residuals for %s : %E'%(yName, sum(model.resid)/len(model.resid)))
-    
+
 #    plt.hlines(y = upper, xmin = min(x), xmax = max(x), alpha = 0.8, lw = 5,
 #               color = colour, linestyle = 'dashed')
 #    plt.hlines(y = lower, xmin = min(x), xmax = max(x), alpha = 0.8, lw = 5,
@@ -1601,7 +1656,7 @@ Average = %.2e'''%(upper - lower, abs(sum(model.resid)/len(model.resid))))
 #                            connectionstyle="arc3", color=colour, lw=5, alpha = 0.8),
 #            )
 
-#    plt.text(1.05*min(x), .5*upper, 'Range: %g'%(upper - lower), 
+#    plt.text(1.05*min(x), .5*upper, 'Range: %g'%(upper - lower),
 #         rotation = 90, fontsize = 9)
     legendfont = 25
     labelfont = 25
@@ -1612,11 +1667,11 @@ Average = %.2e'''%(upper - lower, abs(sum(model.resid)/len(model.resid))))
     plt.yticks(fontsize = labelfont)
     plt.grid(True, which = 'both')
     plt.show()
-    
+
 ###############################################################################
 
 def ccdiagram(x, xName, y, yName):
-       
+
     labelfont = 20
     plt.xlabel(xName, fontsize = labelfont)
     plt.ylabel(yName, fontsize = labelfont)
@@ -1625,10 +1680,10 @@ def ccdiagram(x, xName, y, yName):
     plt.xticks(fontsize = labelfont)
     plt.yticks(fontsize = labelfont)
     plt.grid(True, which = 'both')
-        
+
 ###############################################################################
-    
-def saveStats(xname, arrayname, arrayresults, arrayparams, 
+
+def saveStats(xname, arrayname, arrayresults, arrayparams,
               arrayfit, arrayequation, arraytau, filename):
     '''
      Writes the statistical parameters and best fit equation to a text file.
@@ -1668,29 +1723,29 @@ def marginal(x, xname, y, yName, colour1, colour2, calc_tau):
                                                                     y,
                                                                     yName,
                                                                     calc_tau)
-    
+
     # definitions for the axes
     left, width = 0.1, 0.65
     bottom, height = 0.1, 0.65
     bottom_h = left_h = left + width + 0.02
-    
+
     rect_scatter = [left, bottom, width, height]
     rect_plot = [left, bottom, width, height]
     rect_histx = [left, bottom_h, width, 0.2]
     rect_histy = [left_h, bottom, 0.2, height]
-    
+
     # start with a rectangular Figure
     plt.figure(1, figsize=(8, 8))
-    
+
     axScatter = plt.axes(rect_scatter)
     axPlot = plt.axes(rect_plot)
     axHistx = plt.axes(rect_histx)
     axHisty = plt.axes(rect_histy)
-    
+
     # no labels
     axHistx.xaxis.set_major_formatter(nullfmt)
     axHisty.yaxis.set_major_formatter(nullfmt)
-    
+
     # the scatter plot:
     axScatter.scatter(x, y, s = 0.5, alpha = 0.5,
 #                      label = arrayequation,
@@ -1699,19 +1754,19 @@ def marginal(x, xname, y, yName, colour1, colour2, calc_tau):
              label = '%s\nr=%g'%(arrayequation, arrayparams[2]),
              alpha = 0.3,
              c = colour2)
-    
+
     # now determine nice limits:
     y_lower = min(y[~np.isnan(y)])
     y_upper = max(y[~np.isnan(y)])
-    
+
     axScatter.set_xlim(min(x), max(x))
     axScatter.set_ylim(y_lower, y_upper)
     axScatter.legend()
-    
+
     bins = 1000
     axHistx.hist(x[~np.isnan(x)], bins=bins)
     axHisty.hist(y[~np.isnan(y)], bins=bins, orientation='horizontal', label = 'y')
-    
+
     axHistx.set_xlim(axScatter.get_xlim())
     axHisty.set_ylim(axScatter.get_ylim())
     plt.show()
@@ -1766,7 +1821,7 @@ def makeTable(file):
     l
     S[table-format=+1.6]
     S[table-format=5]
-    S[table-format=4.4]		  
+    S[table-format=4.4]
     @{}
 }
 \hline
@@ -1799,7 +1854,7 @@ Combo	&	{$|r|>0.5$}	&	{$n$}	&	{$r^2n > 1000$}\\
 	l
 	S[table-format=+1.6]
 	S[table-format=5]
-	S[table-format=4]		  
+	S[table-format=4]
 	@{}
 }
 \hline
@@ -1828,7 +1883,7 @@ def zPredictions(x1, y1, x1name, y1name, x2, y2, x2name, y2name, equation, combi
     labelfont = 25
     titlefont = 25
     fig1 = plt.figure()
-    
+
     ax1 = fig1.add_subplot(111)
     ax1.scatter(x1, y1, alpha = 0.5, s = 30,
 #                c= 'b', marker = 'o'
@@ -1862,7 +1917,7 @@ def zPredictions(x1, y1, x1name, y1name, x2, y2, x2name, y2name, equation, combi
     plt.show()
     return np.nanstd(y1)
  ###############################################################################
- 
+
 def binning(col, cut_points, labels = None):
     #   Define min and max values:
     minval = col.min()
@@ -1896,7 +1951,7 @@ def subgraph(x, xname, y, yname, dataset, colour, ax, residuals = False, calc_ta
     line, its equation and its regression coefficient, as well as Kendall's tau
     and the total number of points plotted.
     '''
-    
+
     arrayresults, arrayresids, arrayparams, arrayfit, arrayequation, arraytau = computeLinearStats(x,
                                                                     xname,
                                                                     y,
@@ -1951,17 +2006,17 @@ def redshiftEvolution(x, xname, y, yname):
     sources['z bins']=pd.cut(sources['z'], [0,1,2,3, max(z)],
                    labels = ['z < 1', '1 < z < 2', '2 < z < 3', 'z > 3'])
     fig = plt.figure()
-    fig.subplots_adjust(hspace=0) 
-    fig.subplots_adjust(wspace=0) 
-    
+    fig.subplots_adjust(hspace=0)
+    fig.subplots_adjust(wspace=0)
+
     gridsize = 1,4
-    
+
     ax1 = plt.subplot2grid(gridsize, (0,0))
     ax1.scatter(x, y, s = 10, alpha = 0.5)
     ax1.set_ylabel('yname', fontsize=20)
     ax1.set_xlabel('xname', fontsize=20)
     ax1.grid()
-    
+
     ax2 = plt.subplot2grid(gridsize, (0,1), sharey=ax1, sharex = ax1)
     ax2.scatter(x, y, s = 10, alpha = 0.5)
     plt.setp(ax2.get_yticklabels(), visible=False)
@@ -1973,7 +2028,7 @@ def redshiftEvolution(x, xname, y, yname):
     plt.setp(ax3.get_yticklabels(), visible=False)
     ax3.set_xlabel('xname', fontsize=20)
     ax3.grid()
-    
+
     ax4 = plt.subplot2grid(gridsize, (0,3), sharey=ax1, sharex = ax1)
     ax4.scatter(x, y, s = 10, alpha = 0.5)
     plt.setp(ax4.get_yticklabels(), visible=False)
@@ -1981,14 +2036,13 @@ def redshiftEvolution(x, xname, y, yname):
     ax4.grid()
 
 ###############################################################################
-   
+
 def fixDat(file):
     '''
     Removes extra spaces in the data files. Replaces original file with new
     and renames original to "...._original.dat".
     '''
-    import os
-    
+
     import re
     with open(file+'.dat', 'r') as infile:
         with open(file+'_fixed.dat', 'w') as outfile:
@@ -1996,9 +2050,8 @@ def fixDat(file):
             for line in lines:
                 fixed = re.sub("\s\s+" , " ", line)
                 outfile.write(fixed)
-    
+
     os.rename(file+'.dat', file+'_original.dat')
     os.rename(file+'_fixed.dat', file+'.dat')
 
 ###############################################################################
-
