@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 
 start_time = time.time()
 
-
 #%% Load data
 dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,  # to drop NaNs
@@ -66,14 +65,9 @@ print("Model completed in", (time.time() - start_time), "seconds")
 print("Optimisation completed in", (time.time() - start_time), "seconds")
 #%% Plot results
 
-fig, ax = plt.subplots(nrows = 1, ncols = 2,
-                       # figsize = (12, 9)
-                       )
+fig, ax = plt.subplots(nrows = 1, ncols = 2)
 fig.tight_layout()
 
-# plot_mse() #https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/
-# plot_mae()
-# qf.plot_deltaz(x, y, datasetname)
 qf.plot_z(X_test['z_spec'], X_test['z_phot'], datasetname, ax = ax[0])
 qf.plot_delta_z_hist(X_test['delta_z'], datasetname, model, ax = ax[1])
 

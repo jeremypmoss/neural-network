@@ -20,9 +20,9 @@ start_time = time.time()
 
 #%% Load data
 qf.make_test(1000, 10, 0)
-dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
-                                                   dropna = False,  # to drop NaNs
-                                                   colours = False, # to compute colours of mags
+dataset, datasetname, magnames, mags = qf.loaddata('xlsoptn',
+                                                   dropna = True,  # to drop NaNs
+                                                   colours = True, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for missing data
 
 #%% Model
@@ -57,16 +57,13 @@ print("Model completed in", time.time() - start_time, "seconds")
 
 #%% Plot results
 
-fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize = (12, 9))
-fig.tight_layout()
-
 # plot_mse() #https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/
 # plot_mae()
 # qf.plot_deltaz(x, y, datasetname)
+fig, ax = plt.subplots(nrows = 1, ncols = 2, figsize = (12, 9))
+fig.tight_layout()
 qf.plot_z(X_test['z_spec'], X_test['z_phot'], datasetname, ax = ax[0])
 qf.plot_delta_z_hist(X_test['delta_z'], datasetname, model, ax = ax[1])
-
 qf.kurt_result(X_test['delta_z'])
-qf.plot_z_sets(y_train, X_test['z_spec'], datasetname)
 
 print("Script completed in", time.time() - start_time, "seconds")
