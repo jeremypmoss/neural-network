@@ -68,12 +68,11 @@ def plot_feature_importance(feature_importance):
                   f" +/- {r.importances_std[i]:.3f}")
 
 #%% Load training/validation dataset
-dataset, datasetname, magnames, mags = qf.loaddata('sdss16qso',
+dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
                                                    dropna = False,
                                                    colours = True,
                                                    impute_method = 'max')
 
-# datasetname = r'SDSS $\times$ WISE' # formerly "Steve's SDSS data"
 X = mags
 y = dataset['redshift']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
@@ -81,7 +80,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
 qf.training_validation_z_sets(y_train, y_test, datasetname)
 
 #%% Load unknown dataset
-skymap, skymapname, skymapmagnames, skymapmags = qf.loaddata('skymapper_wise',
+skymap, skymapname, skymapmagnames, skymapmags = qf.loaddata('ugriz',
                                                    dropna = False,
                                                    colours = True,
                                                    impute_method = 'max')
