@@ -68,9 +68,9 @@ def plot_feature_importance(feature_importance):
                   f" +/- {r.importances_std[i]:.3f}")
 
 #%% Load training/validation dataset
-dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
+dataset, datasetname, magnames, mags = qf.loaddata('milli_x_gleam_fits',
                                                    dropna = False,
-                                                   colours = True,
+                                                   colours = False,
                                                    impute_method = 'max')
 
 X = mags
@@ -80,7 +80,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
 qf.training_validation_z_sets(y_train, y_test, datasetname)
 
 #%% Load unknown dataset
-skymap, skymapname, skymapmagnames, skymapmags = qf.loaddata('ugriz',
+skymap, skymapname, skymapmagnames, skymapmags = qf.loaddata('skymapper_wise',
                                                    dropna = False,
                                                    colours = True,
                                                    impute_method = 'max')
@@ -100,38 +100,38 @@ wandb.init(project = 'GBR_{0}'.format(datasetname),
             config = {'epochs': 4, 'batch_size': 32, 'lr': 'learning_rate'})
 wandb.log({'acc': 0.9, 'loss': 0.1})
 
-# grid_GBR = GridSearchCV(estimator = GBR, verbose = 2,
-#                         param_grid = parameters, cv = 2, n_jobs = -1)
-# grid_GBR.fit(X_train, y_train)
+grid_GBR = GridSearchCV(estimator = GBR, verbose = 2,
+                        param_grid = parameters, cv = 2, n_jobs = -1)
+grid_GBR.fit(X_train, y_train)
 
 # Results from Grid Search
 # https://blog.paperspace.com/implementing-gradient-boosting-regression-python/
-# print(" Results from Grid Search")
-# print("\n The best estimator across ALL searched params:\n",
-#       grid_GBR.best_estimator_)
-# print("\n The best score across ALL searched params:\n",
-#       grid_GBR.best_score_)
-# print("\n The best parameters across ALL searched params:\n",
-#       grid_GBR.best_params_)
+print(" Results from Grid Search")
+print("\n The best estimator across ALL searched params:\n",
+      grid_GBR.best_estimator_)
+print("\n The best score across ALL searched params:\n",
+      grid_GBR.best_score_)
+print("\n The best parameters across ALL searched params:\n",
+      grid_GBR.best_params_)
 
-# print("Optimisation completed in", time.time() - start_time, "seconds")
+print("Optimisation completed in", time.time() - start_time, "seconds")
 
-#%% Build and train model
-# params = {
-#     "n_estimators": grid_GBR.best_estimator_.n_estimators,
-#     "max_depth": grid_GBR.best_estimator_.max_depth,
-#     "min_samples_split": 5,
-#     "learning_rate": grid_GBR.best_estimator_.learning_rate,
-#     "loss": 'squared_error',
-# }
-
-params = { # these are copied in from the best parameters from the grid search
-    "n_estimators": 2000,
-    "max_depth": 10,
+# %% Build and train model
+params = {
+    "n_estimators": grid_GBR.best_estimator_.n_estimators,
+    "max_depth": grid_GBR.best_estimator_.max_depth,
     "min_samples_split": 5,
-    "learning_rate": 0.01,
+    "learning_rate": grid_GBR.best_estimator_.learning_rate,
     "loss": 'squared_error',
 }
+
+# params = { # these are copied in from the best parameters from the grid search
+#     "n_estimators": 2000,
+#     "max_depth": 10,
+#     "min_samples_split": 5,
+#     "learning_rate": 0.01,
+#     "loss": 'squared_error',
+# }
 
 reg = GradientBoostingRegressor(**params)
 model = reg.fit(X_train, y_train)
@@ -161,10 +161,10 @@ print("Script completed in", time.time() - start_time, "seconds")
 
 #%% Predict for new dataset
 
-skymap_pred = reg.predict(skymap)
+# skymap_pred = reg.predict(skymap)
 
-skymap['z_pred'] = skymap_pred
-qf.plot_one_z_set(skymap_pred, skymapname)
-qf.compare_z(skymap_pred, dataset['redshift'],
-               set1name = skymapname,
-               set2name = datasetname)
+# skymap['z_pred'] = skymap_pred
+# qf.plot_one_z_set(skymap_pred, skymapname)
+# qf.compare_z(skymap_pred, dataset['redshift'],
+#                set1name = skymapname,
+#                set2name = datasetname)

@@ -5,7 +5,8 @@ Created on Mon Feb 20 16:17:25 2023
 @author: JeremyMoss
 """
 
-import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
+# import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
+from DataLoader import DataLoader
 import matplotlib.pyplot as plt
 import quasar_functions as qf
 import numpy as np
@@ -13,40 +14,24 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.pyplot import cm
 
 #%% Load training/validation dataset
-sdss16 = qf.loaddata('sdss16qso',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
 
-steves = qf.loaddata('sdssmags',
-                   dropna = False,
-                   colours = False,
-                   impute_method = None)
+dl = DataLoader(dropna = False,
+                colours = False,
+                impute_method = 'max')
 
-skymap = qf.loaddata('skymapper_wise',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
+sdss16 = dl.load_data('sdss16qso')
 
-galex = qf.loaddata('galexqso',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
+steves = dl.load_data('sdssmags')
 
-oldfit = qf.loaddata('old_fitted',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
+skymap = dl.load_data('skymapper')
 
-xlsoptn = qf.loaddata('xlsoptn',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
+galex = dl.load_data('galexqso')
 
-sdss12 = qf.loaddata('sdss12_petrosian',
-                    dropna = False,
-                    colours = False,
-                    impute_method = None)
+oldfit = dl.load_data('old_fitted')
+
+xlsoptn = dl.load_data('xlsoptn')
+
+sdss12 = dl.load_data('sdss12')
 
 def plot_annotations(dataset, band):
     label = r'''{0}
@@ -67,28 +52,23 @@ plot_params = {'density': False,
                  'alpha': 1}
 
 tick_params = {'rotation': 0,
-                 'fontsize': 'small'}
+                 'fontsize': 16}
 
 scale = 'linear'
 figsize = (18, 10)
 data_list = [galex, skymap]
 colour_list = cm.hsv(np.linspace(0, 0.8, len(data_list)))
-bands = ['u'
-          , 'g', 'r', 'i', 'zmag', 'W1', 'W2'
-         ]
+band_list = ['u', 'g', 'r', 'i', 'zmag', 'W1', 'W2']
 
-for band in bands:
+for band in band_list:
     fig, ax = plt.subplots(figsize = figsize)
     text_y = 0.7
-    for dataset, colour in zip(data_list,
-                                       colour_list,
-                                       # np.linspace(0.3, 2/len(data_list), len(data_list)) # for even spacing of text
-                                       ):
+    for dataset, colour in zip(data_list, colour_list):
         ax.hist(dataset[0][band], **plot_params, color = colour)
         print('Histogram for {0} {1}'.format(band, dataset[1]))
         ax.text(0.15, text_y, plot_annotations(dataset, band),
                             transform = fig.transFigure,
-                            color = colour, size = 'x-small')
+                            color = colour, size = 12)
         text_y = text_y - 0.1
     ax.set_yscale(scale)
     ax.grid(which = 'both', axis = 'both')
@@ -97,4 +77,4 @@ for band in bands:
     ax.set_xlabel('{0} [mag]'.format(band))
     ax.set_ylabel('Count')
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.savefig('../../Toy paper/plots/mag_dist_{0}'.format(band))
+    plt.savefig('../../Toy paper/mag_dist_plots/mag_dist_{0}'.format(band))

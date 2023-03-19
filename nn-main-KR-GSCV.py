@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 start_time = time.time()
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
+dataset, datasetname, magnames, mags = qf.loaddata('milli_x_gleam_fits',
                                                    dropna = False,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = 'max') # to impute max vals for
@@ -72,7 +72,7 @@ qf.plot_z(X_test['z_spec'], X_test['z_phot'], datasetname, ax = ax[0])
 qf.plot_delta_z_hist(X_test['delta_z'], datasetname, model, ax = ax[1])
 
 qf.kurt_result(X_test['delta_z'])
-qf.plot_z_sets(y_train, X_test['z_spec'], datasetname)
+# qf.compare_z(y_train, X_test['z_spec'], datasetname, 'set 2')
 
 print("Script completed in", (time.time() - start_time), "seconds")
 
@@ -81,4 +81,4 @@ sky, skyname, skymagnames, skymags = qf.loaddata('skymapper',
                                                    dropna = True,  # to drop NaNs
                                                    colours = False, # to compute colours of mags
                                                    impute_method = None) # to impute max vals for
-sky_pred = model.predict(sky)
+# sky_pred = model.predict(sky)

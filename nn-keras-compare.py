@@ -61,7 +61,7 @@ def wider_model(hyperparameters, n, loss, metrics, opt):
     return model
 
 #%% Load data
-dataset, datasetname, magnames, mags = qf.loaddata('sdssmags',
+dataset, datasetname, magnames, mags = qf.loaddata('milli_x_gleam_fits',
                                                    dropna = False,
                                                    colours = False,
                                                    impute_method = 'max')
@@ -170,15 +170,15 @@ qf.plot_delta_z_hist(X_test['delta_z_wide'], datasetname + ' wide', baseline_mod
 print("Script completed in", time.time() - start_time, "seconds")
 
 #%% Load a test set
-skymap, skymapname, skymagnames, skymags = qf.loaddata('skymapper',
-                                                   dropna = False,
-                                                   colours = False,
-                                                   impute_method = 'max')
-skymap_pred = baseline_model.predict(skymap)
-skymap_pred = deeper_model.predict(skymap)
-skymap_pred = wider_model.predict(skymap)
+# skymap, skymapname, skymagnames, skymags = qf.loaddata('skymapper',
+#                                                    dropna = False,
+#                                                    colours = False,
+#                                                    impute_method = 'max')
+# skymap_pred = baseline_model.predict(skymap)
+# skymap_pred = deeper_model.predict(skymap)
+# skymap_pred = wider_model.predict(skymap)
 
-qf.plot_one_z_set(skymap_pred, skymapname)
-qf.compare_z(skymap_pred, dataset['redshift'],
-               set1name = skymapname,
-               set2name = datasetname)
+# qf.plot_one_z_set(skymap_pred, skymapname)
+# qf.compare_z(skymap_pred, dataset['redshift'],
+#                set1name = skymapname,
+#                set2name = datasetname)

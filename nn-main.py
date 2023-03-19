@@ -6,7 +6,7 @@ Created on Fri Jan  6 09:02:41 2023
 """
 
 import numpy as np
-import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
+# import sys; sys.path.insert(0, 'D:/Dropbox/Jim/Astro_at_VUW/PhD_stuff/code')
 import quasar_functions as qf
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
