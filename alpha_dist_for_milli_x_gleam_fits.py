@@ -20,9 +20,9 @@ df = qf.loaddata('milli_x_gleam_fits', dropna=False,
                  impute_method='max')
 
 # %%
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 9))
+fig, ax = plt.subplots(nrows=1, ncols=2)
 fig.tight_layout()
 
-qf.plot_z(df[0]['alpha'], df[0]['my alpha'], datasetname, ax=[0])
+qf.plot_z(df[0]['alpha'], df[0]['my alpha'], datasetname, ax=ax[0])
 qf.plot_delta_z_hist(
     df[0]['alpha'] - df[0]['my alpha'], datasetname, model=None, ax=ax[1])
