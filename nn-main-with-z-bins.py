@@ -54,22 +54,34 @@ dl = DataLoader(dropna=False,
 # Specify the number of rows to load
 path = r'../../data_files'
 number_of_rows = None
-dataset, datasetname, magnames, mags = dl.load_data('sdssmags',
+dataset, datasetname, magnames, mags = dl.load_data('mq_x_gleam_nonpeaked_with_z',
                                                     path, number_of_rows=number_of_rows)
 
+# Define the bin edges
+bin_edges = [0, 1, 1.5, 2, 2.5, 3]
+# Assign data points to bins
+bin_indices = np.digitize(dataset['redshift'], bin_edges)
+# Create a list to store the datasets for each bin
+bin_datasets = []
+# Iterate over the bins
+for bin_idx in range(1, len(bin_edges)):
+    # Filter the dataset based on the bin indices
+    bin_data = dataset[bin_indices == bin_idx]
+    # Add the bin data to the list of datasets
+    bin_datasets.append(bin_data)
+
+dataset = bin_datasets[2]  # choose a redshift bin to train on
+mags = dataset[mags.columns]
 test_frac = 0.2
 X = mags
-y = dataset['redshift'].values
+y = dataset['redshift']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_frac)
 
 # %% Model
-model_params = {'X': mags,
-                'y': dataset['redshift'].values,
-                'n': len(mags.columns),
-                'num_layers': 3,
+model_params = {'n': len(mags.columns),
                 'hyperparameters': [100, 'relu', 100, 'relu', 100, 'relu'],
-                'loss_metric': 'mean_squared_error',
-                'evaluation_metrics': ['mae'],
+                'loss': 'mean_squared_error',
+                'metrics': ['mae'],
                 'opt': 'Nadam'}
 
 '''
@@ -90,8 +102,9 @@ kfold = KFold(n_splits=kfold_splits)
 baseline_results = cross_val_score(baseline_regressor, X_train, y_train,
                                    cv=kfold, scoring='neg_mean_squared_error')
 
-fit_base = baseline_model.fit(X, y)          # fit the baseline model to the target data
-y_pred_base = baseline_model.predict(X_test) # generate z_phots from baseline model
+fit_base = baseline_model.fit(X, y)  # fit the baseline model to the target data
+# generate z_phots from baseline model
+y_pred_base = baseline_model.predict(X_test)
 '''
 End section
 '''

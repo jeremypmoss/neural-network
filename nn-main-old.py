@@ -54,19 +54,16 @@ dl = DataLoader(dropna=False,
 # Specify the number of rows to load
 path = r'../../data_files'
 number_of_rows = None
-dataset, datasetname, magnames, mags = dl.load_data('sdssmags',
+dataset, datasetname, magnames, mags = dl.load_data('mq_x_gleam_nonpeaked_with_z',
                                                     path, number_of_rows=number_of_rows)
 
 test_frac = 0.2
 X = mags
-y = dataset['redshift'].values
+y = dataset['redshift']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_frac)
 
 # %% Model
-model_params = {'X': mags,
-                'y': dataset['redshift'].values,
-                'n': len(mags.columns),
-                'num_layers': 3,
+model_params = {'n': len(mags.columns),
                 'hyperparameters': [100, 'relu', 100, 'relu', 100, 'relu'],
                 'loss_metric': 'mean_squared_error',
                 'evaluation_metrics': ['mae'],
@@ -82,7 +79,7 @@ kfold_splits = 5
 regressor_params = {'epochs': 5,
                     'batch_size': 5,
                     'verbose': -1}
-baseline_model = qf.build_nn_model(**model_params)
+baseline_model = qf.build_nn_model_old(**model_params)
 baseline_regressor = KerasRegressor(model=baseline_model, **regressor_params)
 kfold = KFold(n_splits=kfold_splits)
 
@@ -90,13 +87,14 @@ kfold = KFold(n_splits=kfold_splits)
 baseline_results = cross_val_score(baseline_regressor, X_train, y_train,
                                    cv=kfold, scoring='neg_mean_squared_error')
 
-fit_base = baseline_model.fit(X, y)          # fit the baseline model to the target data
-y_pred_base = baseline_model.predict(X_test) # generate z_phots from baseline model
+fit_base = baseline_model.fit(X, y)  # fit the baseline model to the target data
+# generate z_phots from baseline model
+y_pred_base = baseline_model.predict(X_test)
 '''
 End section
 '''
 # This defines the main model used for this script
-model = qf.build_nn_model(**model_params)
+model = qf.build_nn_model_old(**model_params)
 
 history = model.fit(X_train, y_train, epochs=100,
                     validation_split=test_frac,
@@ -179,7 +177,7 @@ qf.plot_delta_z_hist(X_test['delta_z'], datasetname, model, ax=ax[1])
 # qf.plot_delta_z_hist(X_test['delta_z_base'], datasetname, model, ax=ax[1])
 
 qf.kurt_result(X_test['delta_z'])
-qf.metrics_table(y_test, y_pred)
+qf.metrics_table(y_test, y_pred, 'Neural Network')
 
 print("Baseline:\t%.2f\t(%.2f) MSE\t%.2f MAE" % (baseline_results.mean(),
       baseline_results.std(), median_absolute_error(y_test, y_pred_base)))

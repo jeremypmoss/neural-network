@@ -78,10 +78,14 @@ def plot_feature_importance(feature_importance):
 
 # %% Load training/validation dataset
 dl = DataLoader(dropna=False,
-                colours=True,
-                impute_method='max')
-
-dataset, datasetname, magnames, mags = dl.load_data('sdssmags')
+                colours=False,
+                impute_method=None)
+# Specify the number of rows to load
+path = r'../../data_files'
+number_of_rows = None
+dataset, datasetname, magnames, mags = dl.load_data('mq_x_gleam_nonpeaked_with_z',
+                                                    path,
+                                                    number_of_rows)
 
 X = mags
 y = dataset['redshift']
@@ -158,10 +162,9 @@ qf.metrics_table(y_test, y_pred)
 print(f"Script completed in {time.time() - start_time:.1f} seconds")
 
 # %% Predict for new dataset
-new, newname, newmagnames, newmags = dl.load_data('galexqso')
+new, newname, newmagnames, newmags = dl.load_data('skymapper_wise')
 new_pred = reg.predict(new)
 
-# %%
 new['z_pred'] = new_pred
 qf.plot_one_z_set(new_pred, newname)
 qf.compare_z(new_pred, dataset['redshift'],

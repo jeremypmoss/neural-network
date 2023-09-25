@@ -4,21 +4,19 @@ Created on Tue Feb 28 12:02:48 2023
 
 @author: JeremyMoss
 """
-from sklearn.metrics import median_absolute_error
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+import quasar_functions as qf
 from scikeras.wrappers import KerasRegressor
+from sklearn.metrics import median_absolute_error
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
-import quasar_functions as qf
-import matplotlib.pyplot as plt
-import time
 from DataLoader import DataLoader
-import numpy as np
 from matplotlib.pyplot import cm
 
 
@@ -33,7 +31,69 @@ rc_fonts = {
 plt.rcParams.update(rc_fonts)
 
 
-def deeper_model(hyperparameters, n, loss, metrics, opt):
+def deeper_model_k(X, y, n,
+                   hyperparameters=[100, 'relu', 100, 'relu', 100, 'relu'],
+                   loss_metric='mean_squared_error',
+                   evaluation_metrics=['mae'],
+                   opt='Nadam',
+                   n_splits=3):
+    ''' Define the prediction model. The NN takes magnitudes as input features
+    and outputs the redshift. n should be len(train_set.keys())'''
+
+    # Create a KFold instance
+    kf = KFold(n_splits=n_splits)
+
+    # Initialize lists to store the evaluation metrics for each fold
+    all_loss = []
+    all_metrics = []
+
+    # input features X and target values y
+    for train_index, val_index in kf.split(X):
+        # Split the data into training and validation sets for the current fold
+        X_train, X_val = X[train_index], X[val_index]
+        y_train, y_val = y[train_index], y[val_index]
+
+        # Build the model for the current fold
+        model = keras.Sequential([
+            keras.layers.Dense(hyperparameters[0], activation=hyperparameters[1],  # number of outputs to next layer
+                               input_shape=[n]),  # number of features
+            keras.layers.Dense(
+                hyperparameters[2], activation=hyperparameters[3]),
+            keras.layers.Dense(
+                hyperparameters[4], activation=hyperparameters[5]),
+            keras.layers.Dense(
+                hyperparameters[4], activation=hyperparameters[5]),
+            keras.layers.Dense(1)  # 1 output (redshift)
+        ])
+
+        model.compile(loss=loss_metric, optimizer=opt,
+                      metrics=evaluation_metrics)
+
+        # Train the model on the current fold
+        # Adjust the number of epochs and batch size as needed
+        model.fit(X_train, y_train, epochs=10, batch_size=32)
+
+        # Evaluate the model on the validation set for the current fold
+        loss, metrics = model.evaluate(X_val, y_val)
+
+        # Store the evaluation metrics for the current fold
+        all_loss.append(loss)
+        all_metrics.append(metrics)
+
+    # Print the average evaluation metrics across all folds
+    print('Average loss:', sum(all_loss) / len(all_loss))
+    print('Average metrics:', sum(all_metrics) / len(all_metrics))
+
+    return model
+
+
+def deeper_model(n,
+                 hyperparameters=[100, 'relu', 100, 'relu', 100, 'relu'],
+                 loss_metric='mean_squared_error',
+                 evaluation_metrics=['mae'],
+                 opt='Nadam'):
+    ''' Define the prediction model. The NN takes magnitudes as input features
+    and outputs the redshift. n should be len(train_set.keys())'''
     model = keras.Sequential([
         keras.layers.Dense(hyperparameters[0], activation=hyperparameters[1],  # number of outputs to next layer
                            input_shape=[n]),  # number of features
@@ -43,7 +103,7 @@ def deeper_model(hyperparameters, n, loss, metrics, opt):
         keras.layers.Dense(1)  # 1 output (redshift)
     ])
 
-    model.compile(loss=loss, optimizer=opt, metrics=metrics)
+    model.compile(loss=loss_metric, optimizer=opt, metrics=evaluation_metrics)
     print(model.summary())
     return model
 
@@ -54,12 +114,23 @@ dl = DataLoader(dropna=False,
                 impute_method=None)
 path = r'../../data_files'
 number_of_rows = None
-dataset, datasetname, magnames, mags = dl.load_data('mq_x_gleam_nonpeaked_with_z', path,
+dataset, datasetname, magnames, mags = dl.load_data('milli_x_gleam_fits', path,
                                                     number_of_rows=number_of_rows)
+# Filter for non-nan values of my alpha and drop other features
+columns_to_drop = ['Rmag', 'Bmag', 'alpha_thin']
+filtered_dataset = dataset[columns_to_drop].notnull()
+
+# Drop columns with all NaN values
+filtered_dataset = filtered_dataset.dropna(axis=1, how='all')
+
+# mags = mags[mags[column_to_drop].notnull()]
+# mags.dropna(axis=1, how='all', inplace=True)
+
+# %% Define train and test sets
 X = mags
 y = dataset['redshift']
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
-kfold_splits = 5
+kfold_splits = 20
 
 # %% Define and evaluate base model
 regressor_params = {'epochs': 5,
@@ -68,9 +139,12 @@ regressor_params = {'epochs': 5,
 
 model_params = {'n': len(mags.columns),
                 'hyperparameters': [100, 'relu', 100, 'relu', 100, 'relu'],
-                'loss': 'mean_squared_error',
-                'metrics': ['mae'],
-                'opt': 'Adam'}
+                'loss_metric': 'mean_squared_error',
+                'evaluation_metrics': ['mae'],
+                'opt': 'Adam',
+                # 'X': mags.values,
+                # 'y': dataset["redshift"].values
+                }
 
 baseline_model = qf.build_nn_model(**model_params)
 baseline_model.summary()
@@ -116,8 +190,8 @@ print("Deep model completed in", time.time() - start_time, "seconds")
 # %% Evaluate wider model with standarised dataset
 model_params = {'n': len(mags.columns),
                 'hyperparameters': [500, 'relu', 500, 'relu', 500, 'relu'],
-                'loss': 'mean_squared_error',
-                'metrics': ['mae'],
+                'loss_metric': 'mean_squared_error',
+                'evaluation_metrics': ['mae'],
                 'opt': 'Nadam'}
 wider_model = qf.build_nn_model(**model_params)
 wider_model.summary()
@@ -137,13 +211,14 @@ print("Wide model completed in", time.time() - start_time, "seconds")
 
 # %% Display z_phot against z_spec and z distribution histogram
 
-print("Baseline:\t%.2f\t(%.2f) MSE\t%.2f MAE" % (base_results.mean(),
-      base_results.std(), median_absolute_error(y_test, y_pred_base)))
-print("Standard:\t%.2f\t(%.2f) MSE" % (std_results.mean(), std_results.std()))
-print("Deeper:\t%.2f\t(%.2f) MSE\t%.2f MAE" % (deep_results.mean(),
-      deep_results.std(), median_absolute_error(y_test, y_pred_deep)))
-print("Wider:\t%.2f\t(%.2f) MSE\t%.2f MAE" % (wide_results.mean(),
-      wide_results.std(), median_absolute_error(y_test, y_pred_wide)))
+print(f"Baseline:\t{base_results.mean():.2f}\t({base_results.std():.2f}) MSE\
+      \t{median_absolute_error(y_test, y_pred_base):.2f} MAE")
+print(f"Standard:\t{std_results.mean():.2f}\t({std_results.std():.2f}) MSE")
+print(f"Deeper:\t{deep_results.mean():.2f}\t({deep_results.std():.2f}) MSE\
+      \t{median_absolute_error(y_test, y_pred_deep):.2f} MAE")
+print(f"Wider:\t{wide_results.mean():.2f}\t({wide_results.std():.2f}) MSE\
+      \t{median_absolute_error(y_test, y_pred_wide):.2f} MAE")
+
 
 X_test['z_spec'] = y_test
 X_test['z_phot_base'] = y_pred_base
@@ -191,112 +266,6 @@ qf.plot_delta_z_hist(X_test['delta_z_mean'],
 
 print(f"Script completed in {time.time() - start_time:.1f} seconds")
 
-# %% Load and predict a test set
-# Using the clarke catalogue here produces an error.
-# new, newname, newmagnames, newmags = dl.load_data('skymapper_wise', path)
-
-# new_pred_base = baseline_model.predict(new)
-# new_pred_deep = deeper_model.predict(new)
-# new_pred_wide = wider_model.predict(new)
-
-# %% Plot predictions for test set
-
-# set1name = '{0} base predictions'.format(newname)
-# fig, ax = plt.subplots()
-# # ax.hist(new_pred_base,
-# #         bins=100,
-# #         density=True,
-# #         edgecolor='red',
-# #         color='pink',
-# #         label='Predictions for {0} (baseline model)'.format(newname))
-# ax.hist(dataset['redshift'],
-#         bins=100,
-#         density=True,
-#         edgecolor='blue',
-#         color='lightblue',
-#         label=r'$z_\mathrm{spec}$ from training data',
-#         alpha=0.5)
-# ax.hist(y_pred_base,
-#         bins=50,
-#         density=True,
-#         edgecolor='darkgreen',
-#         color='g',
-#         label=r'$z_\mathrm{phot}$ from training data',
-#         alpha=0.5)
-# ax.grid(True)
-# ax.set_xlabel('Redshift')
-# ax.set_yscale('linear')
-# ax.set_ylabel('Count')
-# ax.set_title('Redshift distributions for\n{0} and {1} (training set)'.format(
-#     newname, datasetname))
-# ax.legend(loc='upper right')
-
-# qf.compare_z(skymap_pred_deep, dataset['redshift'],
-#              set1name='Skymapper deep predictions',
-#              set2name=datasetname,
-#              yscale='linear')
-
-# set1name = '{0} wide predictions'.format(newname)
-# set2name = datasetname
-# fig, ax = plt.subplots()
-# ax.hist(new_pred_wide,
-#         bins=100,
-#         density=True,
-#         edgecolor='red',
-#         color='pink',
-#         label='Predictions for {0} (wide model)'.format(newname))
-# ax.hist(dataset['redshift'],
-#         bins=100,
-#         density=True,
-#         edgecolor='blue',
-#         color='lightblue',
-#         label=r'$z_\mathrm{spec}$ from training data',
-#         alpha=0.5)
-# ax.hist(y_pred_base,
-#         bins=50,
-#         density=True,
-#         edgecolor='darkgreen',
-#         color='g',
-#         label=r'$z_\mathrm{phot}$ from training data',
-#         alpha=0.5)
-# ax.grid(True)
-# ax.set_xlabel('Redshift')
-# ax.set_yscale('linear')
-# ax.set_ylabel('Count')
-# ax.set_title('Redshift distributions for\n{0} and {1} (training set)'.format(
-#     set1name, set2name))
-# ax.legend(loc='upper right')
-
-# set1name = 'Skymapper deep predictions'
-# set2name = datasetname
-# fig, ax = plt.subplots()
-# ax.hist(new_pred_deep,
-#         bins=100,
-#         density=True,
-#         edgecolor='red',
-#         color='pink',
-#         label='Predictions for {0} (deep model)'.format(newname))
-# ax.hist(dataset['redshift'],
-#         bins=100,
-#         density=True,
-#         edgecolor='blue',
-#         color='lightblue',
-#         label=r'$z_\mathrm{spec}$ from training data',
-#         alpha=0.5)
-# ax.hist(y_pred_base,
-#         bins=50,
-#         density=True,
-#         edgecolor='darkgreen',
-#         color='g',
-#         label=r'$z_\mathrm{phot}$ from training data',
-#         alpha=0.5)
-# ax.grid(True)
-# ax.set_xlabel('Redshift')
-# ax.set_yscale('linear')
-# ax.set_ylabel('Count')
-# ax.set_title('Redshift distributions for\n{0} and {1} (training set)'.format(
-#     set1name, set2name))
-# ax.legend(loc='upper right')
 # %% All plots on top of each other
 n = 4
 color = iter(cm.hsv(np.linspace(0, 0.8, n)))
@@ -355,13 +324,16 @@ qf.metrics_table(y_test, y_pred_wide.flatten())
 
 # %% Summary plot
 
-sample_sizes = [1000, 2000, 3000, 4000, 5619]
-r_squared_list = [0.005, 0.029, 0.004, 0.007, 0.011]
-sigma_list = [0.779, 0.744, 0.781, 0.701, 0.741]
+sample_sizes = [100, 200, 300, 400, 500, 1000, 2000, 3000, 4000, 5619]
+r_squared_list = [0.057, 0.005, 0.068, 0.01,
+                  0.001, 0.005, 0.029, 0.004, 0.007, 0.011]
+sigma_list = [0.789, 0.866, 0.658, 0.818,
+              0.743, 0.779, 0.744, 0.781, 0.701, 0.741]
 fig, ax = plt.subplots()
-ax.plot(sample_sizes, r_squared_list, label=r'$r^2$ for mean $z_\mathrm{phot}$')
+ax.plot(sample_sizes, r_squared_list,
+        label=r'$r^2$ for mean $z_\mathrm{phot}$', marker='o')
 ax.plot(sample_sizes, sigma_list,
-        label=r'$\sigma$ for $z_\mathrm{phot}$ distribution')
+        label=r'$\sigma$ for $z_\mathrm{phot}$ distribution', marker='o')
 ax.set_xlabel('Sample size')
 ax.set_title(r'Effect of increasing sample size of $r^2$ and $\sigma$')
 ax.grid(True)
