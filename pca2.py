@@ -27,13 +27,17 @@ rc_params = {'figure.autolayout': True, **rc_fonts}
 plt.rcParams.update(rc_params)
 
 #%% Load data using DataLoader
-dl = DataLoader(dropna=False, colours=False, impute_method='max')
-path = r'../../data_files'
-number_of_rows = None
-dataset, datasetname, magnames, mags = dl.load_data('mq_x_gleam_nonpeaked_with_z',
-                                                    path,
-                                                    number_of_rows,
-                                                    binning = True, selected_bin = 2)
+class_params = {'dropna': False,
+                'colours': False,
+                'impute_method': 100.0} # None, 'max', 'mean' or float
+load_params = {'name': 'test',
+               'path': r'../../data_files',
+               'number_of_rows': None,
+               'binning': True,
+               'selected_bin': None}
+
+dl = DataLoader(**class_params)
+dataset, datasetname, magnames, mags = dl.load_data(**load_params)
 
 # Split the data into training and testing sets
 X = mags
@@ -43,6 +47,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 print('Training data shape:', X_train.shape)
 print('Testing data shape:', X_test.shape)
 print(y_train.shape, y_test.shape)
+
+apply_neural_network = True
 
 #%% Standardize all datasets and the target
 scaler = StandardScaler()
@@ -174,8 +180,6 @@ print(qf.metrics_table(np.array(y_test), pred, regr_name))
 
 #%% Apply neural network to the standardised, PCA'd datasets
 
-apply_neural_network = False
-
 if apply_neural_network:
     # Set X and y for the neural network
     X = X_train_pca_scaled  # Input features (standardised PCA-transformed training data)
@@ -206,7 +210,7 @@ if apply_neural_network:
     X_test['z_phot_NN'] = y_pred
 
     X_test['delta_z'] = X_test['z_spec'] - X_test['z_phot_NN']
-    # Visualize the predicted vs. spectroscopic redshift
+#%% Visualize the predicted vs. spectroscopic redshift
     fig, ax = plt.subplots(nrows=1, ncols=2)
     fig.tight_layout()
     title = f'Predicted redshift comparison from Neural Network\nfor {datasetname}'
